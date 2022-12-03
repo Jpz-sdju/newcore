@@ -1,2 +1,2 @@
 `define WORD_WIDTH 32
-`define xxx::??
+`define CACHELINE_SIZE 64 //byte

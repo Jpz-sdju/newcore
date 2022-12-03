@@ -1,4 +1,4 @@
-module dff #(
+module dffclass #(
     parameter WIDTH=1
 ) (
     input [WIDTH-1:0] din,
@@ -15,4 +15,17 @@ module dff #(
             dout <= din;
         end
     end
+endmodule
+
+module dffeclass #( parameter WIDTH=1 )
+   (
+     input logic [WIDTH-1:0] din,
+     input logic             en,
+     input logic           clk,
+     input logic                   rst_l,
+     output logic [WIDTH-1:0] dout
+     );
+
+   dff #(WIDTH) dffe (.din((en) ? din[WIDTH-1:0] : dout[WIDTH-1:0]), .*);
+
 endmodule

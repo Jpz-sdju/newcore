@@ -1,5 +1,0 @@
-module frontend (
-    what?
-);
-    
-endmodule

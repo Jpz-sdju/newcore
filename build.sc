@@ -143,7 +143,6 @@ object chiselModule extends CrossSbtModule with CommonModule with HasChisel3 wit
   override def moduleDeps = super.moduleDeps ++ Seq(
     rocketModule,
     difftestModule,
-    huancunModule,
-    fudianModule
+    huancunModule
   )
 }

@@ -1,9 +1,6 @@
 [submodule "HuanCun"]
 	path = HuanCun
 	url = https://github.com/Jpz-sdju/HuanCun.git
-[submodule "rocket-chip"]
-	path = rocket-chip
-	url = https://github.com/OpenXiangShan/rocket-chip.git
 [submodule "difftest"]
 	path = difftest
 	url = https://github.com/Jpz-sdju/difftest.git

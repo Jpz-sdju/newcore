@@ -1,0 +1,9 @@
+[submodule "HuanCun"]
+	path = HuanCun
+	url = https://github.com/Jpz-sdju/HuanCun.git
+[submodule "wukong_difftest"]
+	path = wukong_difftest
+	url = https://github.com/FuWenyi/wukong_difftest.git
+[submodule "rocket-chip"]
+	path = rocket-chip
+	url = https://github.com/OpenXiangShan/rocket-chip.git

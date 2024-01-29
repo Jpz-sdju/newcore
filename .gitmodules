@@ -4,3 +4,6 @@
 [submodule "difftest"]
 	path = difftest
 	url = https://github.com/Jpz-sdju/difftest.git
+[submodule "rocket-chip"]
+	path = rocket-chip
+	url = git@github.com:OpenXiangShan/rocket-chip.git

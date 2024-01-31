@@ -3,6 +3,8 @@ FIR_OPTS = -td build --output-file top.v --full-stacktrace
 verilog:
 	mill chiselModule.test.runMain Sim $(FIR_OPTS)
 
+test:
+	mill chiselModule.test.runMain Exp $(FIR_OPTS)
 help:
 	mill chiselModule.runMain Sim --help
 

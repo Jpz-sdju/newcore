@@ -20,9 +20,11 @@ class Top1()(implicit p: Parameters) extends Module {
       dynamicLatency = false
       )
       
-  val sfd= Module(l_simAXIMem.module)
+      val sfd= Module(l_simAXIMem.module)
 
   l_simAXIMem.io_axi4 <> soc.memory
+
+
 
 }
 
@@ -97,23 +99,3 @@ class HuanCunExpImpl(outer: HuanCunExp) extends LazyModuleImp(outer) {
   val memory = outer.memAXI4SlaveNode.makeIOs()
 }
 
-class sfs()(implicit p: Parameters) extends LazyModule {
-  val iun = LazyModule(new IUnCache())
-  val timer = LazyModule(new TLTimer())
-  val sss = LazyModule(new IUnCache())
-  val xbar = TLXbar()
-  xbar := iun.clientNode
-  xbar := sss.clientNode
-//    xbar := TLTempNode() := iun.clientNode
-  timer.node := xbar
-
-  lazy val module = new sfsImpl(this)
-
-}
-
-class sfsImpl(outer: sfs) extends LazyModuleImp(outer) {
-
-  val iun = outer.iun.module
-  val timer = outer.timer.module
-
-}

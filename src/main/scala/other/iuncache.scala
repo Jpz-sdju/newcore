@@ -43,20 +43,21 @@ println(wo.clientNode.out.head._1.params)
     cnt := cnt +1.U
   }
   val load = edge
-        .AcquireBlock(
+        .Get(
           fromSource = 1.U,
           toAddress = 2.U,
           lgSize = log2Ceil(64).U, // 64
-          growPermissions = "b00".U
+          // growPermissions = "b00".U
         )
         ._2
 
     val store = edge
-        .AcquirePerm(
+        .Put(
           fromSource = 1.U,
           toAddress = 2.U,
           lgSize = log2Ceil(64).U,
-          growPermissions = "b00".U
+          data = 0.U
+          // growPermissions = "b00".U
         )
         ._2
 

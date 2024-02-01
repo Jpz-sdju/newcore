@@ -35,7 +35,6 @@ class IUncacheImp(wo: IUnCache) extends LazyModuleImp(wo) {
   val cnt = RegInit(0.U(8.W))
   val (bus, edge) = wo.clientNode.out.head
 
-println(wo.clientNode.out.head._1.params)
   val mem_acquire = bus.a
   val mem_grant = bus.d
 

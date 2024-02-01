@@ -31,10 +31,10 @@ class Top1()(implicit p: Parameters) extends Module {
 class Top()(implicit p: Parameters) extends Module {
 
   val io = IO(new Bundle {})
-  val l_soc = LazyModule(new sfs())
+  val l_soc = LazyModule(new simpleCase())
   val soc = Module(l_soc.module)
 
-  val target = l_soc.iun.clientNode
+  val target = l_soc.iun0.clientNode
   val target_1 = l_soc.timer.node
 }
 

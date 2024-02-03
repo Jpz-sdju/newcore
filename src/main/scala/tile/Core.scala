@@ -8,43 +8,25 @@ import frontend._
 import backend._
 import freechips.rocketchip.config._
 import freechips.rocketchip.diplomacy._
-import tilelink._
+import freechips.rocketchip.tilelink._
+import freechips.rocketchip.amba.axi4._
+import device._
 
 class Core()(implicit p: Parameters) extends Module {
-  val io = IO(new Bundle {
-    val iread_req = Decoupled(new ReadReq)
-    val iread_resp = Decoupled(Flipped(new ReadResp))
-  })
+  val l_core = LazyModule(new CoreWithL1())
+  val core = Module(l_core.module)
 
-  val frontend = Module(new Frontend())
-  val backend = Module(new Backend())
+  core.iread_req := DontCare
+  core.iread_resp := DontCare
 
-  val iread_req = io.iread_req
-  val iread_resp = io.iread_resp
+  val l_simAXIMem = AXI4MemorySlave(
+    l_core.memAXI4SlaveNode,
+    128 * 1024 * 1024,
+    useBlackBox = true,
+    dynamicLatency = false
+  )
+  val simAxi =Module(l_simAXIMem.module)
 
-  iread_req <> frontend.io.iread_req
-  iread_resp <> frontend.io.iread_resp
+  core.memory <> l_simAXIMem.io_axi4
 
-  //axi4ram slave node
-  val device = new MemoryDevice
-  val memRange = AddressSet(0x00000000L, 0xffffffffL).subtract(AddressSet(0x0L, 0x7fffffffL))
-  val memAXI4SlaveNode = AXI4SlaveNode(Seq(
-    AXI4SlavePortParameters(
-      slaves = Seq(
-        AXI4SlaveParameters(
-          address = memRange,
-          regionType = RegionType.UNCACHED,
-          executable = true,
-          supportsRead = TransferSizes(1, 64),
-          //supportsRead = TransferSizes(1, 8),
-          supportsWrite = TransferSizes(1, 64),
-          //supportsWrite = TransferSizes(1, 8),
-          interleavedId = Some(0),
-          resources = device.reg("mem")
-        )
-      ),
-      //beatBytes = 32
-      beatBytes = 8
-    )
-  ))
 }

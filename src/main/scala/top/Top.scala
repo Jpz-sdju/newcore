@@ -37,10 +37,13 @@ class Top()(implicit p: Parameters) extends Module {
   })
 
   val core = Module(new Core())
-  io.ot := core.iread_req.bits.addr(3,0)
+// io.ot := core.iread_req.bits.addr(3,0)
+  io.ot := DontCare
+
+  // core.iread_req := DontCare
+  // core.iread_resp := DontCare
   
-  core.iread_req := DontCare
-  core.iread_resp := DontCare
+
 }
 
 class HuanCunExp()(implicit p: Parameters) extends LazyModule {

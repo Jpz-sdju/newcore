@@ -50,8 +50,9 @@ object Sim extends App {
 }
 object Exp extends App with HasRocketChipStageUtils {
 
-  implicit val p = Parameters.empty
-  p.alterPartial { case MonitorsEnabled => false }
-  Generator.execute(args, new Top()(p))
+  // implicit val p = Parameters.empty
+  // p.alterPartial { case MonitorsEnabled => false }
+  // Generator.execute(args, new Top()(p))
+  Generator.execute(args, DisableMonitors(p => new Top()(p))(Parameters.empty))
 
 }

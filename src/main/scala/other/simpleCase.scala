@@ -11,12 +11,12 @@ import device._
 import freechips.rocketchip.amba.axi4._
 
 class simpleCase()(implicit p: Parameters) extends LazyModule {
-  val iun = LazyModule(new IUnCache())
+  val iun0 = LazyModule(new IUnCache())
   val timer = LazyModule(new TLTimer())
-  val sss = LazyModule(new IUnCache())
+  val iun1 = LazyModule(new IUnCache())
   val xbar = TLXbar()
-  xbar := iun.clientNode
-  xbar := sss.clientNode
+  xbar := iun0.clientNode
+  xbar := iun1.clientNode
 //    xbar := TLTempNode() := iun.clientNode
   timer.node := xbar
 

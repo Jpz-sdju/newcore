@@ -34,4 +34,4 @@ clean:
 
 
 gtk: test
-	sudo gtkwave build/vcd.vcd
+	sudo gtkwave vcd.vcd

@@ -30,5 +30,42 @@ class Icache()(implicit p: Parameters) extends LazyModule {
 
   val node = TLClientNode(Seq(clientParameters))
 
-  lazy val module = new LazyModuleImp(this) {}
+  lazy val module = new IcacheImpl(this)
+}
+class IcacheImpl(outer: Icache)(implicit p: Parameters)
+    extends LazyModuleImp(outer) {
+  val io = IO(new Bundle {
+    val read_req = Flipped(DecoupledIO(new ReadReq))
+    val read_resp = DecoupledIO((new ReadResp))
+  })
+
+  val (bus, edge) = outer.node.out.head
+
+  val f = Module(new fake(edge))
+  f.io.iread <> io.read_req
+
+  f.io.mem_getPutAcquire <> bus.a
+  f.io.mem_grantReleaseAck <> bus.d
+
+}
+class fake(edge: TLEdgeOut) extends Module {
+  val io = IO(new Bundle {
+    val iread = Flipped(Decoupled(new ReadReq))
+    val mem_getPutAcquire = DecoupledIO(new TLBundleA(edge.bundle))
+    val mem_grantReleaseAck = Flipped(DecoupledIO(new TLBundleD(edge.bundle)))
+  })
+
+  val acqu = edge
+    .AcquireBlock(
+      fromSource = 0.U,
+      toAddress = io.iread.bits.addr(4, 0),
+      lgSize = 2.U,
+      growPermissions = 0.U
+    )
+    ._2
+  io.mem_getPutAcquire.bits := acqu
+  io.mem_getPutAcquire.valid := io.iread.valid
+  io.iread.ready := io.mem_getPutAcquire.ready
+
+  io.mem_grantReleaseAck.ready := true.B
 }

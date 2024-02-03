@@ -52,7 +52,7 @@ void init()
     vcd = new VerilatedVcdC;
 
     top->trace(vcd, 00);
-    vcd->open("/home/oslab/work/chisel/newcore/build/vcd.vcd");
+    vcd->open("vcd.vcd");
 }
 int main(int argc, char **argv)
 {

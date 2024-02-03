@@ -7,7 +7,7 @@ import freechips.rocketchip.config._
 class Frontend()(implicit p: Parameters) extends Module {
   val io = IO(new Bundle {
     val iread_req = Decoupled(new ReadReq)
-    val iread_resp = Decoupled(Flipped(new ReadResp))
+    val iread_resp = Flipped(Decoupled(new ReadResp))
   })
 
   val ifu = Module(new IFU())

@@ -40,26 +40,30 @@ class CoreWithL1()(implicit p: Parameters) extends LazyModule {
       )
     )
   )
-  memAXI4SlaveNode := TLToAXI4() := icache.node
+  memAXI4SlaveNode :=   TLToAXI4() := TLBuffer() := TLCacheCork():= icache.node
 
-  lazy val module = new NutShellImp(this)
+  lazy val module = new CoreWithL1Imp(this)
 
 }
-class NutShellImp(outer: CoreWithL1) extends LazyModuleImp(outer) {
+class CoreWithL1Imp(outer: CoreWithL1) extends LazyModuleImp(outer) {
   val io = IO(new Bundle {
     val iread_req = Decoupled(new ReadReq)
-    val iread_resp = Decoupled(Flipped(new ReadResp))
+    val iread_resp = Flipped(Decoupled(new ReadResp))
   })
 
   val frontend = Module(new Frontend())
   val backend = Module(new Backend())
-  val icache = LazyModule(new Icache())
 
   val iread_req = io.iread_req
   val iread_resp = io.iread_resp
 
-  iread_req <> frontend.io.iread_req
-  iread_resp <> frontend.io.iread_resp
+  
+
+  val icache = outer.icache.module
+
+  icache.io.read_req <> frontend.io.iread_req
+  icache.io.read_resp <> frontend.io.iread_resp
+
 
   val memory = outer.memAXI4SlaveNode.makeIOs()
 }

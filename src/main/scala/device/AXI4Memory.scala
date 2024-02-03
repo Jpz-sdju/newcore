@@ -40,6 +40,8 @@ abstract class AXI4MemorySlave(
     extends LazyModule {
   val master = AXI4MasterNode(List(slave.in.head._2.master))
 
+  // println(List(slave.in.head._2.master))
+
   val portParam = slave.portParams.head
   val slaveParam = portParam.slaves.head
   val burstLen = portParam.maxTransfer / portParam.beatBytes

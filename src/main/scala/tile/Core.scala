@@ -26,7 +26,8 @@ class Core()(implicit p: Parameters) extends Module {
     dynamicLatency = false
   )
   val simAxi =Module(l_simAXIMem.module)
-
   core.memory <> l_simAXIMem.io_axi4
+
+  
 
 }

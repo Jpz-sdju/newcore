@@ -11,7 +11,7 @@ class IFU()(implicit p: Parameters) extends Module{
 
   val io = IO(new Bundle{
     val read_req = DecoupledIO(new ReadReq)
-    val read_resp = DecoupledIO(Flipped(new ReadResp))
+    val read_resp = Flipped(DecoupledIO(new ReadResp))
 
     val redirect = Input(Bool())
   })

@@ -38,13 +38,6 @@ class Top()(implicit p: Parameters) extends Module {
 
   val core = Module(new Core())
   io.ot := core.iread_req.bits.addr(3,0)
-
-  // val f = Wire(new Bundle{
-  //   val a = DecoupledIO(Flipped(new ReadReq))
-  //   val b = DecoupledIO((new ReadResp))
-  // })
-  
-  // f.a := DontCare
   
   core.iread_req := DontCare
   core.iread_resp := DontCare

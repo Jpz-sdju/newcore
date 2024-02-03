@@ -8,7 +8,7 @@ import freechips.rocketchip.tilelink._
 import huancun._
 import device._
 import freechips.rocketchip.amba.axi4._
-
+import tile._
 class Top1()(implicit p: Parameters) extends Module {
     val l_soc = LazyModule(new HuanCunExp())
     val soc = Module(l_soc.module)
@@ -28,14 +28,26 @@ class Top1()(implicit p: Parameters) extends Module {
 
 }
 
+import bus._
 class Top()(implicit p: Parameters) extends Module {
 
-  val io = IO(new Bundle {})
-  val l_soc = LazyModule(new sfs())
-  val soc = Module(l_soc.module)
+  val io = IO(new Bundle {
+    val ot = Output(UInt(4.W))
+    val it = Input(UInt(4.W))
+  })
 
-  val target = l_soc.iun.clientNode
-  val target_1 = l_soc.timer.node
+  val core = Module(new Core())
+  io.ot := core.iread_req.bits.addr(3,0)
+
+  // val f = Wire(new Bundle{
+  //   val a = DecoupledIO(Flipped(new ReadReq))
+  //   val b = DecoupledIO((new ReadResp))
+  // })
+  
+  // f.a := DontCare
+  
+  core.iread_req := DontCare
+  core.iread_resp := DontCare
 }
 
 class HuanCunExp()(implicit p: Parameters) extends LazyModule {

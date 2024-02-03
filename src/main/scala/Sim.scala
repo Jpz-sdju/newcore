@@ -23,28 +23,6 @@ object Exp extends App with HasRocketChipStageUtils {
 
   implicit val p = Parameters.empty
   p.alterPartial { case MonitorsEnabled => false }
-
-
-
-  val l3cache = LazyModule(new HuanCun()(new Config((_, _, _) => {
-    case HCCacheParamsKey => HCCacheParameters(
-      name = s"L1",
-      level = 1,
-      inclusive = false,
-      clientCaches = Seq(CacheParameters(sets = 64, ways = 4, blockGranularity = 7, name = "icache")),
-    //   ctrl = Some(CacheCtrl(
-    //     address = 0x39000000,
-    //     numCores = corenum
-    //   )),
-      //prefetch = Some(huancun.prefetch.BOPParameters()),
-      sramClkDivBy2 = true,
-      reqField = Seq(),
-      echoField = Seq()
-      //enableDebug = true
-    )
-  })))
-  // val sf = Module(l3cache.module)
-  Generator.execute(args, l3cache.module)
-  writeOutputFile("./build","graph.graphml",l3cache.graphML)
+  Generator.execute(args, new Top()(p))
 
 }

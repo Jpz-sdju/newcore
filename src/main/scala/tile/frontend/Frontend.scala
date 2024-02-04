@@ -15,6 +15,16 @@ class Frontend()(implicit p: Parameters) extends Module {
 
   iread_req <> ifu.io.read_req
   iread_resp <> ifu.io.read_resp
-
   ifu.io.redirect := false.B
+
+  val decode = Module(new DecodeUnit())
+
+  decode.io.in.ctrl_flow.instr := "h00113423".U
+  decode.io.in.ctrl_flow.pc := "h80000000".U
+  decode.io.in.ctrl_flow.pred_taken := false.B
+
+  val res = decode.io.out.cf_ctrl
+  dontTouch(res)
+
+
 }

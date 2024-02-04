@@ -9,11 +9,6 @@ import freechips.rocketchip.util.uintToBitPat
 import utils._
 import freechips.rocketchip.rocket.Instructions._
 import tile._
-class Decode extends Module{
-  
-}
-
-
 abstract trait DecodeConstants {
   // This X should be used only in 1-bit signal. Otherwise, use BitPat("b???") to align with the width of UInt.
   def X = BitPat("b?")

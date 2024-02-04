@@ -4,14 +4,16 @@ import chisel3._
 import utils._
 import util._
 import bus._
-import frontend._
-import backend._
 import freechips.rocketchip.config._
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.tilelink._
 import freechips.rocketchip.amba.axi4._
 import device._
 import huancun.utils._
+import tile._
+import frontend._
+import backend._
+import cache._
 class CoreWithL1()(implicit p: Parameters) extends LazyModule {
 
   val icache = LazyModule(new Icache())

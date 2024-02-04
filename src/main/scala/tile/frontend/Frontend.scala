@@ -1,6 +1,5 @@
-package frontend
+package tile.frontend
 import chisel3._, utils._, util._
-import frontend._
 import bus._
 import freechips.rocketchip.config._
 

@@ -56,7 +56,6 @@ void init()
 }
 int main(int argc, char **argv)
 {
-
     contextp->commandArgs(argc, argv);
     init();
 

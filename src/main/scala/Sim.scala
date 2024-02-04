@@ -54,5 +54,9 @@ object Exp extends App with HasRocketChipStageUtils {
   // p.alterPartial { case MonitorsEnabled => false }
   // Generator.execute(args, new Top()(p))
   Generator.execute(args, DisableMonitors(p => new Top()(p))(Parameters.empty))
+  println("======================Finish Chisel Compile!======================")
+  println(" ")
+  println(" ")
+  println(" ")
 
 }

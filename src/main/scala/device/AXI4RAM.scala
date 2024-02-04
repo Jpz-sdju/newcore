@@ -108,8 +108,6 @@ class AXI4RAMWrapper (
     slaveParam.address, memByte, useBlackBox,
     slaveParam.executable, portParam.beatBytes, burstLen
   ))
-  println("sdhfasjfklsajfdl")
-  println(portParam.beatBytes)
 
   ram.node := master
 }

@@ -1,11 +1,9 @@
-package frontend
+package tile.cache
 
 import chisel3._
 import utils._
 import util._
 import bus._
-import frontend._
-import backend._
 import freechips.rocketchip.config._
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.tilelink._

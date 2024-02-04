@@ -11,6 +11,7 @@ class IFU()(implicit p: Parameters) extends Module{
 
   val io = IO(new Bundle{
     val read_req = DecoupledIO(new ReadReq)
+    val read_fin = Input(Bool())
     val redirect = Input(Bool())
   })
 
@@ -21,7 +22,7 @@ class IFU()(implicit p: Parameters) extends Module{
 
   when(io.redirect){
     pc := 0.U
-  }.otherwise{
+  }.elsewhen(io.read_fin){
     pc := pc +4.U
   }
 

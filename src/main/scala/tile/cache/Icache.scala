@@ -73,7 +73,9 @@ class fake(edge: TLEdgeOut) extends Module {
     ._2
   io.mem_getPutAcquire.bits := acqu
   io.mem_getPutAcquire.valid := req_valid
+
   io.iread_req.ready := io.mem_getPutAcquire.ready
+  // io.iread_req.ready := io.mem_grantReleaseAck.valid
   
   when(io.iread_resp.fire){
     req_valid := false.B

@@ -14,12 +14,11 @@ class Frontend()(implicit p: Parameters) extends Module {
   val decoder = Module(new Decoder())
   val decoder_in = decoder.io.in.ctrl_flow
   val decoder_out = decoder.io.out.cf_ctrl
-  ifu.io.redirect := false.B
-
+  
   
   val iread_req = io.iread_req
   val iread_resp = io.iread_resp
-
+  
   //icache read req
   iread_req <> ifu.io.read_req
   //icache read resp to decoder
@@ -29,12 +28,16 @@ class Frontend()(implicit p: Parameters) extends Module {
   decoder_in.valid := iread_resp.valid
   iread_resp.ready := true.B
   
-  //frontendg to backend
+
+  //resp is valid,notify ifu to update pc
+  ifu.io.redirect := false.B
+  ifu.io.read_fin := iread_resp.valid
+  //frontend to backend
   io.out <> decoder_out
-
-
-
-
+  
+  
+  
+  dontTouch(decoder_out)
 
 
 }

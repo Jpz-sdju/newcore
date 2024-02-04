@@ -1,206 +1,378 @@
-// package backend
-// import chisel3._
-// import chisel3.util._
-// import freechips.rocketchip.config._
-// import bus._
 
-// object ALUOpType {
-//   def add = "b1000000".U
-//   def sll = "b0000001".U
-//   def slt = "b0000010".U
-//   def sltu = "b0000011".U
-//   def xor = "b0000100".U
-//   def srl = "b0000101".U
-//   def or = "b0000110".U
-//   def and = "b0000111".U
-//   def sub = "b0001000".U
-//   def sra = "b0001101".U
+package tile.backend
 
-//   def addw = "b1100000".U
-//   def subw = "b0101000".U
-//   def sllw = "b0100001".U
-//   def srlw = "b0100101".U
-//   def sraw = "b0101101".U
+import chisel3._, utils._, util._
+import bus._
+import freechips.rocketchip.config._
+import tile._
+import top.Setting
+import frontend._
+class AddModule(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val src = Vec(2, Input(UInt(XLEN.W)))
+    val srcw = Input(UInt((XLEN/2).W))
+    val add = Output(UInt(XLEN.W))
+    val addw = Output(UInt((XLEN/2).W))
+  })
+  io.add := io.src(0) + io.src(1)
+  // TODO: why this extra adder?
+  io.addw := io.srcw + io.src(1)(31,0)
+}
 
-//   def isWordOp(func: UInt) = func(5)
+class SubModule(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val src = Vec(2, Input(UInt(XLEN.W)))
+    val sub = Output(UInt((XLEN+1).W))
+  })
+  io.sub := (io.src(0) +& (~io.src(1)).asUInt) + 1.U
+}
 
-//   def jal = "b1011000".U
-//   def jalr = "b1011010".U
-//   def beq = "b0010000".U
-//   def bne = "b0010001".U
-//   def blt = "b0010100".U
-//   def bge = "b0010101".U
-//   def bltu = "b0010110".U
-//   def bgeu = "b0010111".U
+class LeftShiftModule(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val shamt = Input(UInt(6.W))
+    val revShamt = Input(UInt(6.W))
+    val sllSrc = Input(UInt(XLEN.W))
+    val sll = Output(UInt(XLEN.W))
+    val revSll = Output(UInt(XLEN.W))
+  })
+  io.sll := io.sllSrc << io.shamt
+  io.revSll := io.sllSrc << io.revShamt
+}
 
-//   // for RAS
-//   def call = "b1011100".U // 0x5c
-//   def ret = "b1011110".U // 0x5e
+class LeftShiftWordModule(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val shamt = Input(UInt(5.W))
+    val revShamt = Input(UInt(5.W))
+    val sllSrc = Input(UInt((XLEN/2).W))
+    val sllw = Output(UInt((XLEN/2).W))
+    val revSllw = Output(UInt((XLEN/2).W))
+  })
+  io.sllw := io.sllSrc << io.shamt
+  io.revSllw := io.sllSrc << io.revShamt
+}
 
-//   def isAlu(func: UInt) = !func(4)
-//   def isAdd(func: UInt) = func(6)
-//   def pcPlus2(func: UInt) = func(5)
-//   def isBru(func: UInt) = func(4)
-//   def isBranch(func: UInt) = !func(3)
-//   def isJump(func: UInt) = isBru(func) && !isBranch(func)
-//   def getBranchType(func: UInt) = func(2, 1)
-//   def isBranchInvert(func: UInt) = func(0)
-// }
+class RightShiftModule(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val shamt = Input(UInt(6.W))
+    val revShamt = Input(UInt(6.W))
+    val srlSrc, sraSrc = Input(UInt(XLEN.W))
+    val srl, sra = Output(UInt(XLEN.W))
+    val revSrl = Output(UInt(XLEN.W))
+  })
+  io.srl  := io.srlSrc >> io.shamt
+  io.sra  := (io.sraSrc.asSInt >> io.shamt).asUInt
+  io.revSrl  := io.srlSrc >> io.revShamt
+}
 
-// class ALUIO extends FunctionUnitIO {
-//   val cfIn = Flipped(new CtrlFlowIO)
-//   val redirect = new RedirectIO
-//   val offset = Input(UInt(XLEN.W))
-//   val alu2pmu = new ALU2PMUIO
-//   val bpuUpdateReq = new BPUUpdateReq
-//   val branchTaken = Output(Bool())
-//   val instCheckValid = Input(
-//     Bool()
-//   ) // for all inst to check whether it is mispredicted as a branch instruction
+class RightShiftWordModule(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val shamt = Input(UInt(5.W))
+    val revShamt = Input(UInt(5.W))
+    val srlSrc, sraSrc = Input(UInt((XLEN/2).W))
+    val srlw, sraw = Output(UInt((XLEN/2).W))
+    val revSrlw = Output(UInt((XLEN/2).W))
+  })
 
-//   // for sfb
-
-//   val sfbPredictwrong = Output(Bool())
-// }
-
-// class ALU(hasBru: Boolean = false) extends Module {
-//   val io = IO(new ALUIO)
-
-//   val (instCheckValid, valid, src1, src2, func) = (
-//     io.instCheckValid,
-//     io.in.valid,
-//     io.in.bits.src1,
-//     io.in.bits.src2,
-//     io.in.bits.func
-//   )
+  io.srlw := io.srlSrc >> io.shamt
+  io.sraw := (io.sraSrc.asSInt >> io.shamt).asUInt
+  io.revSrlw := io.srlSrc >> io.revShamt
+}
 
 
-//   val isAdderSub = !ALUOpType.isAdd(func)
-//   val adderRes = (src1 +& (src2 ^ Fill(XLEN, isAdderSub))) + isAdderSub
-//   val xorRes = src1 ^ src2
-//   val sltu = !adderRes(XLEN)
-//   val slt = xorRes(XLEN - 1) ^ sltu
+class MiscResultSelect(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val func = Input(UInt(6.W))
+    val and, or, xor, orcb, orh48, sextb, packh, sexth, packw, revb, rev8, pack = Input(UInt(XLEN.W))
+    val src = Input(UInt(XLEN.W))
+    val miscRes = Output(UInt(XLEN.W))
+  })
 
-//   val shsrc1 = LookupTreeDefault(
-//     func,
-//     src1(XLEN - 1, 0),
-//     List(
-//       ALUOpType.srlw -> ZeroExt(src1(31, 0), XLEN),
-//       ALUOpType.sraw -> SignExt(src1(31, 0), XLEN)
-//     )
-//   )
-//   val shamt = Mux(
-//     ALUOpType.isWordOp(func),
-//     src2(4, 0),
-//     if (XLEN == 64) src2(5, 0) else src2(4, 0)
-//   )
-//   val res = LookupTreeDefault(
-//     func(3, 0),
-//     adderRes,
-//     List(
-//       ALUOpType.sll -> ((shsrc1 << shamt)(XLEN - 1, 0)),
-//       ALUOpType.slt -> ZeroExt(slt, XLEN),
-//       ALUOpType.sltu -> ZeroExt(sltu, XLEN),
-//       ALUOpType.xor -> xorRes,
-//       ALUOpType.srl -> (shsrc1 >> shamt),
-//       ALUOpType.or -> (src1 | src2),
-//       ALUOpType.and -> (src1 & src2),
-//       ALUOpType.sra -> ((shsrc1.asSInt >> shamt).asUInt)
-//     )
-//   )
-//   val aluRes = Mux(ALUOpType.isWordOp(func), SignExt(res(31, 0), 64), res)
+  val logicRes = VecInit(Seq(
+    io.and,
+    io.or,
+    io.xor,
+    io.orcb
+  ))(io.func(2, 1))
+  val miscRes = VecInit(Seq(io.sextb, io.packh, io.sexth, io.packw))(io.func(1, 0))
+  val logicBase = Mux(io.func(3), miscRes, logicRes)
 
-//   val branchOpTable = List(
-//     ALUOpType.getBranchType(ALUOpType.beq) -> !xorRes.orR,
-//     ALUOpType.getBranchType(ALUOpType.blt) -> slt,
-//     ALUOpType.getBranchType(ALUOpType.bltu) -> sltu
-//   )
+  val revRes = VecInit(Seq(io.revb, io.rev8, io.pack, io.orh48))(io.func(1, 0))
+  val customRes = VecInit(Seq(
+    Cat(0.U(31.W), io.src(31, 0), 0.U(1.W)),
+    Cat(0.U(30.W), io.src(31, 0), 0.U(2.W)),
+    Cat(0.U(29.W), io.src(31, 0), 0.U(3.W)),
+    Cat(0.U(56.W), io.src(15, 8))))(io.func(1, 0))
+  val logicAdv = Mux(io.func(3), customRes, revRes)
 
-//   val isBranch = ALUOpType.isBranch(func)
-//   val isJump = ALUOpType.isJump(func)
-//   val isBru = ALUOpType.isBru(func)
-//   val taken = LookupTree(
-//     ALUOpType.getBranchType(func),
-//     branchOpTable
-//   ) ^ ALUOpType.isBranchInvert(func)
-//   val target = Mux(isBranch, io.cfIn.pc + io.offset, adderRes)(VAddrBits - 1, 0)
-//   val predictWrong = Mux(
-//     !taken && isBranch,
-//     io.cfIn.brIdx(0),
-//     !io.cfIn.brIdx(0) || (io.redirect.target =/= io.cfIn.pnpc)
-//   )
-//   val isRVC = (io.cfIn.instr(1, 0) =/= "b11".U)
-//   // when btb does not recognize branch instruction
-//   val branchPredictMiss =
-//     valid && isBru && isBranch && !io.cfIn.redirect.btbIsBranch(0)
-//   val ALUInstBPW =
-//     valid && !(isBru && isBranch) && io.cfIn.redirect.btbIsBranch(
-//       0
-//     ) // mispredict other insts as branch inst (Branch Predict Wrong)
-//   val notALUInstBPW = instCheckValid && io.cfIn.redirect.btbIsBranch(0)
-//   val branchPredictWrong = ALUInstBPW || notALUInstBPW
-// //  assert(io.cfIn.instr(1,0) === "b11".U || isRVC || !valid)
-// //  Debug(valid && (io.cfIn.instr(1,0) === "b11".U) =/= !isRVC, "[ERROR] pc %x inst %x rvc %x\n",io.cfIn.pc, io.cfIn.instr, isRVC)
-//   io.redirect.target := Mux(
-//     !taken && isBranch,
-//     Mux(isRVC, io.cfIn.pc + 2.U, io.cfIn.pc + 4.U),
-//     target
-//   )
-//   // with branch predictor, this is actually to fix the wrong prediction
-//   io.redirect.valid := valid && isBru && predictWrong // || branchPredictMiss //|| branchPredictWrong
+  val mask = Cat(Fill(15, io.func(0)), 1.U(1.W))
+  val maskedLogicRes = mask & logicRes
 
-//   val redirectRtype = if (EnableOutOfOrderExec) 1.U else 0.U
-//   io.redirect.btbIsBranch := DontCare
-//   io.redirect.rtype := redirectRtype
-//   io.redirect.pc := io.cfIn.pc
-//   // mark redirect type as speculative exec fix
-//   // may be can be moved to ISU to calculate pc + 4
-//   // this is actually for jal and jalr to write pc + 4/2 to rd
-//   io.branchTaken := taken
-//   io.out.bits := Mux(
-//     isBru,
-//     Mux(
-//       !isRVC,
-//       SignExt(io.cfIn.pc, AddrBits) + 4.U,
-//       SignExt(io.cfIn.pc, AddrBits) + 2.U
-//     ),
-//     aluRes
-//   )
+  io.miscRes := Mux(io.func(5), maskedLogicRes, Mux(io.func(4), logicAdv, logicBase))
+}
 
-//   io.in.ready := io.out.ready
-//   io.out.valid := valid
+class ShiftResultSelect(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val func = Input(UInt(4.W))
+    val sll, srl, sra, rol, ror, bclr, bset, binv, bext = Input(UInt(XLEN.W))
+    val shiftRes = Output(UInt(XLEN.W))
+  })
 
-//   val bpuUpdateReq = WireInit(0.U.asTypeOf(new BPUUpdateReq))
-//   bpuUpdateReq.valid := valid && isBru
-//   bpuUpdateReq.pc := io.cfIn.pc
-//   bpuUpdateReq.isMissPredict := predictWrong
-//   bpuUpdateReq.actualTarget := target
-//   bpuUpdateReq.actualTaken := taken
-//   bpuUpdateReq.fuOpType := func
-//   bpuUpdateReq.btbType := LookupTree(func, RV32I_BRUInstr.bruFuncTobtbTypeTable)
-//   bpuUpdateReq.isRVC := isRVC
-//   bpuUpdateReq.btbBtypeMiss := branchPredictMiss
-//   io.bpuUpdateReq := bpuUpdateReq
+  // val leftBit  = Mux(io.func(1), io.binv, Mux(io.func(0), io.bset, io.bclr))
+  // val leftRes  = Mux(io.func(2), leftBit, io.sll)
+  // val rightRes = Mux(io.func(1) && io.func(0), io.sra, Mux(io.func(1), io.bext, io.srl))
+  val resultSource = VecInit(Seq(
+    io.sll,
+    io.sll,
+    io.bclr,
+    io.bset,
+    io.binv,
+    io.srl,
+    io.bext,
+    io.sra
+  ))
+  val simple = resultSource(io.func(2, 0))
 
-//   //
-//   val right = valid && isBru && !predictWrong
-//   val wrong = valid && isBru && predictWrong
-//   val targetWrong =
-//     valid && isBru && predictWrong && (io.redirect.target =/= io.cfIn.pnpc) && (taken === io.cfIn
-//       .brIdx(0))
-//   val directionWrong =
-//     valid && isBru && predictWrong && (taken =/= io.cfIn.brIdx(0))
+  io.shiftRes := Mux(io.func(3), Mux(io.func(1), io.ror, io.rol), simple)
+}
 
-//   io.alu2pmu.branchRight := right && isBranch
-//   io.alu2pmu.branchWrong := wrong && isBranch
-//   io.alu2pmu.jalRight := right && (func === ALUOpType.jal || func === ALUOpType.call)
-//   io.alu2pmu.jalWrong := wrong && (func === ALUOpType.jal || func === ALUOpType.call)
-//   io.alu2pmu.jalrRight := right && func === ALUOpType.jalr
-//   io.alu2pmu.jalrWrong := wrong && func === ALUOpType.jalr
-//   io.alu2pmu.retRight := right && func === ALUOpType.ret
-//   io.alu2pmu.retWrong := wrong && func === ALUOpType.ret
-//   io.alu2pmu.branchTargetWrong := wrong && isBranch && targetWrong
-//   io.alu2pmu.branchDirectionWrong := wrong && isBranch && directionWrong
+class WordResultSelect(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val func = Input(UInt())
+    val sllw, srlw, sraw, rolw, rorw, addw, subw = Input(UInt((XLEN/2).W))
+    val wordRes = Output(UInt(XLEN.W))
+  })
 
-//   io.sfbPredictwrong := io.cfIn.sfb && valid && isBru && predictWrong
-// }
+  val addsubRes = Mux(!io.func(2) && io.func(1), io.subw, io.addw)
+  val shiftRes = Mux(io.func(2), Mux(io.func(0), io.rorw, io.rolw),
+                  Mux(io.func(1), io.sraw, Mux(io.func(0), io.srlw, io.sllw)))
+  val wordRes = Mux(io.func(3), shiftRes, addsubRes)
+  io.wordRes := SignExt(wordRes, XLEN)
+}
+
+
+class AluResSel(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val func = Input(UInt(3.W))
+    val addRes, shiftRes, miscRes, compareRes, wordRes = Input(UInt(XLEN.W))
+    val aluRes = Output(UInt(XLEN.W))
+  })
+
+  val res = Mux(io.func(2, 1) === 0.U, Mux(io.func(0), io.wordRes, io.shiftRes),
+            Mux(!io.func(2), Mux(io.func(0), io.compareRes, io.addRes), io.miscRes))
+  io.aluRes := res
+}
+
+class AluDataModule(implicit p: Parameters) extends Module with Setting {
+  val io = IO(new Bundle() {
+    val src = Vec(2, Input(UInt(XLEN.W)))
+    val func = Input(FuOpType())
+    val pred_taken, isBranch = Input(Bool())
+    val result = Output(UInt(XLEN.W))
+    val taken, mispredict = Output(Bool())
+  })
+  val (src1, src2, func) = (io.src(0), io.src(1), io.func)
+
+  val shamt = src2(5, 0)
+  val revShamt = ~src2(5,0) + 1.U
+
+  // slliuw, sll
+  val leftShiftModule = Module(new LeftShiftModule)
+  val sll = leftShiftModule.io.sll
+  val revSll = leftShiftModule.io.revSll
+  leftShiftModule.io.sllSrc := Cat(Fill(32, func(0)), Fill(32, 1.U)) & src1
+  leftShiftModule.io.shamt := shamt
+  leftShiftModule.io.revShamt := revShamt
+
+  // bclr, bset, binv
+  val bitShift = 1.U << src2(5, 0)
+  val bclr = src1 & ~bitShift
+  val bset = src1 | bitShift
+  val binv = src1 ^ bitShift
+
+  // srl, sra, bext
+  val rightShiftModule = Module(new RightShiftModule)
+  val srl = rightShiftModule.io.srl
+  val revSrl = rightShiftModule.io.revSrl
+  val sra = rightShiftModule.io.sra
+  rightShiftModule.io.shamt := shamt
+  rightShiftModule.io.revShamt := revShamt
+  rightShiftModule.io.srlSrc := src1
+  rightShiftModule.io.sraSrc := src1
+  val bext = srl(0)
+
+  val rol = revSrl | sll
+  val ror = srl | revSll
+
+  // addw
+  val addModule = Module(new AddModule)
+  addModule.io.srcw := Mux(!func(2) && func(0), ZeroExt(src1(0), XLEN), src1(31, 0))
+  val addwResultAll = VecInit(Seq(
+    ZeroExt(addModule.io.addw(0), XLEN),
+    ZeroExt(addModule.io.addw(7, 0), XLEN),
+    ZeroExt(addModule.io.addw(15, 0), XLEN),
+    SignExt(addModule.io.addw(15, 0), XLEN)
+  ))
+  val addw = Mux(func(2), addwResultAll(func(1, 0)), addModule.io.addw)
+
+  // subw
+  val subModule = Module(new SubModule)
+  val subw = subModule.io.sub
+
+  // sllw
+  val leftShiftWordModule = Module(new LeftShiftWordModule)
+  val sllw = leftShiftWordModule.io.sllw
+  val revSllw = leftShiftWordModule.io.revSllw
+  leftShiftWordModule.io.sllSrc := src1
+  leftShiftWordModule.io.shamt := shamt
+  leftShiftWordModule.io.revShamt := revShamt
+
+  val rightShiftWordModule = Module(new RightShiftWordModule)
+  val srlw = rightShiftWordModule.io.srlw
+  val revSrlw = rightShiftWordModule.io.revSrlw
+  val sraw = rightShiftWordModule.io.sraw
+  rightShiftWordModule.io.shamt := shamt
+  rightShiftWordModule.io.revShamt := revShamt
+  rightShiftWordModule.io.srlSrc := src1
+  rightShiftWordModule.io.sraSrc := src1
+
+  val rolw = revSrlw | sllw
+  val rorw = srlw | revSllw
+
+  // add
+  val wordMaskAddSource = Cat(Fill(32, func(0)), Fill(32, 1.U)) & src1
+  val shaddSource = VecInit(Seq(
+    Cat(wordMaskAddSource(62, 0), 0.U(1.W)),
+    Cat(wordMaskAddSource(61, 0), 0.U(2.W)),
+    Cat(wordMaskAddSource(60, 0), 0.U(3.W)),
+    Cat(wordMaskAddSource(59, 0), 0.U(4.W))
+  ))
+  val sraddSource = VecInit(Seq(
+    ZeroExt(src1(63, 29), XLEN),
+    ZeroExt(src1(63, 30), XLEN),
+    ZeroExt(src1(63, 31), XLEN),
+    ZeroExt(src1(63, 32), XLEN)
+  ))
+  // TODO: use decoder or other libraries to optimize timing
+  // Now we assume shadd has the worst timing.
+  addModule.io.src(0) := Mux(func(3), shaddSource(func(2, 1)),
+    Mux(func(2), sraddSource(func(1, 0)),
+    Mux(func(1), ZeroExt(src1(0), XLEN), wordMaskAddSource))
+  )
+  addModule.io.src(1) := src2
+  val add = addModule.io.add
+
+  // sub
+  val sub  = subModule.io.sub
+  subModule.io.src(0) := src1
+  subModule.io.src(1) := src2
+  val sltu    = !sub(XLEN)
+  val slt     = src1(XLEN - 1) ^ src2(XLEN - 1) ^ sltu
+  val maxMin  = Mux(slt ^ func(0), src2, src1)
+  val maxMinU = Mux(sltu ^ func(0), src2, src1)
+  val compareRes = Mux(func(2), Mux(func(1), maxMin, maxMinU), Mux(func(1), slt, Mux(func(0), sltu, sub)))
+
+  // logic
+  val logicSrc2 = Mux(!func(5) && func(0), ~src2, src2)
+  val and     = src1 & logicSrc2
+  val or      = src1 | logicSrc2
+  val xor     = src1 ^ logicSrc2
+  val orcb    = Cat((0 until 8).map(i => Fill(8, src1(i * 8 + 7, i * 8).orR)).reverse)
+  val orh48   = Cat(src1(63, 8), 0.U(8.W)) | src2
+
+  val sextb = SignExt(src1(7, 0), XLEN)
+  val packh = Cat(src2(7,0), src1(7,0))
+  val sexth = SignExt(src1(15, 0), XLEN)
+  val packw = SignExt(Cat(src2(15, 0), src1(15, 0)), XLEN)
+
+  val revb = Cat((0 until 8).map(i => Reverse(src1(8 * i + 7, 8 * i))).reverse)
+  val pack = Cat(src2(31, 0), src1(31, 0))
+  val rev8 = Cat((0 until 8).map(i => src1(8 * i + 7, 8 * i)))
+
+  // branch
+  val branchOpTable = List(
+    ALUOpType.getBranchType(ALUOpType.beq)  -> !xor.orR,
+    ALUOpType.getBranchType(ALUOpType.blt)  -> slt,
+    ALUOpType.getBranchType(ALUOpType.bltu) -> sltu
+  )
+  val taken = LookupTree(ALUOpType.getBranchType(func), branchOpTable) ^ ALUOpType.isBranchInvert(func)
+
+  // Result Select
+  val shiftResSel = Module(new ShiftResultSelect)
+  shiftResSel.io.func := func(3, 0)
+  shiftResSel.io.sll  := sll
+  shiftResSel.io.srl  := srl
+  shiftResSel.io.sra  := sra
+  shiftResSel.io.rol  := rol
+  shiftResSel.io.ror  := ror
+  shiftResSel.io.bclr := bclr
+  shiftResSel.io.binv := binv
+  shiftResSel.io.bset := bset
+  shiftResSel.io.bext := bext
+  val shiftRes = shiftResSel.io.shiftRes
+
+  val miscResSel = Module(new MiscResultSelect)
+  miscResSel.io.func    := func(5, 0)
+  miscResSel.io.and     := and
+  miscResSel.io.or      := or
+  miscResSel.io.xor     := xor
+  miscResSel.io.orcb    := orcb
+  miscResSel.io.orh48   := orh48
+  miscResSel.io.sextb   := sextb
+  miscResSel.io.packh   := packh
+  miscResSel.io.sexth   := sexth
+  miscResSel.io.packw   := packw
+  miscResSel.io.revb    := revb
+  miscResSel.io.rev8    := rev8
+  miscResSel.io.pack    := pack
+  miscResSel.io.src     := src1
+  val miscRes = miscResSel.io.miscRes
+
+  val wordResSel = Module(new WordResultSelect)
+  wordResSel.io.func := func
+  wordResSel.io.addw := addw
+  wordResSel.io.subw := subw
+  wordResSel.io.sllw := sllw
+  wordResSel.io.srlw := srlw
+  wordResSel.io.sraw := sraw
+  wordResSel.io.rolw := rolw
+  wordResSel.io.rorw := rorw
+  val wordRes = wordResSel.io.wordRes
+
+  val aluResSel = Module(new AluResSel)
+  aluResSel.io.func := func(6, 4)
+  aluResSel.io.addRes := add
+  aluResSel.io.compareRes := compareRes
+  aluResSel.io.shiftRes := shiftRes
+  aluResSel.io.miscRes := miscRes
+  aluResSel.io.wordRes := wordRes
+  val aluRes = aluResSel.io.aluRes
+
+  io.result := aluRes
+  io.taken := taken
+  io.mispredict := (io.pred_taken ^ taken) && io.isBranch
+}
+
+class ALU(implicit p: Parameters) extends Module {
+  val io = IO(new Bundle{
+    val in = new Bundle{
+      val cf = Flipped(Decoupled(new CfCtrl))
+      val src = Input(Vec(2, UInt(64.W)))
+    }
+    val out = Decoupled(new Bundle{
+      val data = UInt(64.W)
+    })
+  })
+
+
+  val isBranch = ALUOpType.isBranch(io.in.cf.bits.ctrl.fuOpType)
+  val dataModule = Module(new AluDataModule)
+
+  dataModule.io.src := io.in.src
+  dataModule.io.func := io.in.cf.bits.ctrl.fuOpType
+  dataModule.io.pred_taken := io.in.cf.bits.cf.pred_taken
+  dataModule.io.isBranch := isBranch
+
+  io.in.cf.ready := io.out.ready
+  io.out.valid := io.in.cf.valid
+  io.out.bits.data := dataModule.io.result
+}

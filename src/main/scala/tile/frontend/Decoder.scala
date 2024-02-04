@@ -32,5 +32,5 @@ class Decoder()(implicit p: Parameters) extends Module  {
   //assign out 
   io.out.cf_ctrl.bits.cf := decode_unit_out.cf
   io.out.cf_ctrl.bits.ctrl := decode_unit_out.ctrl
-  io.out.cf_ctrl.valid := true.B
+  io.out.cf_ctrl.valid := io.in.ctrl_flow.valid
 }

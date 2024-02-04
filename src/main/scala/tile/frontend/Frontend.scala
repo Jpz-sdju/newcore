@@ -7,7 +7,12 @@ class Frontend()(implicit p: Parameters) extends Module {
   val io = IO(new Bundle {
     val iread_req = Decoupled(new ReadReq)
     val iread_resp = Flipped(Decoupled(new ReadRespWithReqInfo))
-    val out = Decoupled(new CfCtrl)
+
+    val out = Decoupled(new Bundle {
+      val cf = (new CfCtrl)
+      val src =(Vec(2, UInt(64.W)))
+    })
+
   })
 
   val ifu = Module(new IFU())
@@ -33,7 +38,10 @@ class Frontend()(implicit p: Parameters) extends Module {
   ifu.io.redirect := false.B
   ifu.io.read_fin := iread_resp.valid
   //frontend to backend
-  io.out <> decoder_out
+  io.out.bits.cf :=  decoder_out.bits
+  io.out.bits.src := DontCare
+  io.out.valid := decoder_out.valid
+  decoder_out.ready := io.out.ready
   
   
   

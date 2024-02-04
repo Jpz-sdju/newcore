@@ -354,25 +354,32 @@ class AluDataModule(implicit p: Parameters) extends Module with Setting {
 
 class ALU(implicit p: Parameters) extends Module {
   val io = IO(new Bundle{
-    val in = new Bundle{
-      val cf = Flipped(Decoupled(new CfCtrl))
-      val src = Input(Vec(2, UInt(64.W)))
-    }
+    // val in = new Bundle{
+      
+    //   val cf = Flipped(Decoupled(new CfCtrl))
+    //   val src = Input(Vec(2, UInt(64.W)))
+    // }
+
+
+    val in = Flipped(Decoupled(new Bundle{
+      val cf = new CfCtrl
+      val src = Vec(2, UInt(64.W))
+    }))
     val out = Decoupled(new Bundle{
       val data = UInt(64.W)
     })
   })
 
 
-  val isBranch = ALUOpType.isBranch(io.in.cf.bits.ctrl.fuOpType)
+  val isBranch = ALUOpType.isBranch(io.in.bits.cf.ctrl.fuOpType)
   val dataModule = Module(new AluDataModule)
 
-  dataModule.io.src := io.in.src
-  dataModule.io.func := io.in.cf.bits.ctrl.fuOpType
-  dataModule.io.pred_taken := io.in.cf.bits.cf.pred_taken
+  dataModule.io.src := io.in.bits.src
+  dataModule.io.func := io.in.bits.cf.ctrl.fuOpType
+  dataModule.io.pred_taken := io.in.bits.cf.cf.pred_taken
   dataModule.io.isBranch := isBranch
 
-  io.in.cf.ready := io.out.ready
-  io.out.valid := io.in.cf.valid
+  io.in.ready := io.out.ready
+  io.out.valid := io.in.valid
   io.out.bits.data := dataModule.io.result
 }

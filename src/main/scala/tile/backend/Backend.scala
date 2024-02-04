@@ -18,6 +18,7 @@ class Backend()(implicit p: Parameters) extends Module {
   val alu = Module(new ALU)
   alu.io.in <> io.in
   alu.io.out <> DontCare
+  alu.io.out.ready := true.B
 
   dontTouch(alu.io.out)
 }

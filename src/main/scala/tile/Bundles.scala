@@ -11,6 +11,7 @@ import freechips.rocketchip.tilelink._
 import freechips.rocketchip.amba.axi4._
 import device._
 import top._
+import frontend.{XDecode, ImmUnion}
 
 class CtrlFlow(implicit p: Parameters) extends Bundle with Setting{
   val instr = UInt(32.W)

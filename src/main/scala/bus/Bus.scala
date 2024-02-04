@@ -17,7 +17,11 @@ class ReadResp extends Bundle with Setting{
   val data = UInt(XLEN.W)
 
 }
+class ReadRespWithReqInfo extends Bundle with Setting{
 
+  val req = new ReadReq
+  val resp = new ReadResp
+}
 
 class WriteBus extends Bundle with Setting{
 //  val io = IO //addr size mask ...

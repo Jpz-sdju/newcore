@@ -34,7 +34,7 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
     extends LazyModuleImp(outer) {
   val io = IO(new Bundle {
     val read_req = Flipped(DecoupledIO(new ReadReq))
-    val read_resp = DecoupledIO((new ReadResp))
+    val read_resp = DecoupledIO((new ReadRespWithReqInfo))
   })
 
   val (bus, edge) = outer.node.out.head
@@ -50,27 +50,41 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
 class fake(edge: TLEdgeOut) extends Module {
   val io = IO(new Bundle {
     val iread_req = Flipped(Decoupled(new ReadReq))
-    val iread_resp = (Decoupled(new ReadResp))
+    val iread_resp = (DecoupledIO(new ReadRespWithReqInfo))
     val mem_getPutAcquire = DecoupledIO(new TLBundleA(edge.bundle))
     val mem_grantReleaseAck = Flipped(DecoupledIO(new TLBundleD(edge.bundle)))
   })
+  val req = io.iread_req.bits
+  val req_valid = RegInit(false.B)
+  val req_reg = Reg(new ReadReq)
+
+  when(io.iread_req.valid){
+    req_reg := io.iread_req.bits
+    req_valid := true.B
+  }
 
   val acqu = edge
     .AcquireBlock(
       fromSource = 0.U,
-      toAddress = io.iread_req.bits.addr,
+      toAddress = req_reg.addr,
       lgSize = 2.U,
       growPermissions = 0.U
     )
     ._2
   io.mem_getPutAcquire.bits := acqu
-  io.mem_getPutAcquire.valid := io.iread_req.valid
+  io.mem_getPutAcquire.valid := req_valid
   io.iread_req.ready := io.mem_getPutAcquire.ready
   
-  
+  when(io.iread_resp.fire){
+    req_valid := false.B
+    req_reg := (0.U).asTypeOf(new ReadReq)
+  }
 
+  //icache out to frontend 
   io.mem_grantReleaseAck.ready := true.B
-  io.iread_resp.bits.data := io.mem_grantReleaseAck.bits.data
+  io.iread_resp.bits.req.addr := req_reg.addr
+  io.iread_resp.bits.req.size := req_reg.size
+  io.iread_resp.bits.resp.data := io.mem_grantReleaseAck.bits.data
   io.iread_resp.valid := io.mem_grantReleaseAck.valid
   
 }

@@ -102,11 +102,14 @@ class CoreWithL1Imp(outer: CoreWithL1) extends LazyModuleImp(outer) {
 
   val iread_req = io.iread_req
   val iread_resp = io.iread_resp
-
   val icache = outer.icache.module
+
 
   icache.io.read_req <> frontend.io.iread_req
   icache.io.read_resp <> frontend.io.iread_resp
+
+
+  frontend.io.out <> DontCare
 
   val memory = outer.memAXI4SlaveNode.makeIOs()
 }

@@ -45,7 +45,6 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   f.io.mem_getPutAcquire <> bus.a
   f.io.mem_grantReleaseAck <> bus.d
 
-
 }
 class fake(edge: TLEdgeOut) extends Module {
   val io = IO(new Bundle {
@@ -58,7 +57,7 @@ class fake(edge: TLEdgeOut) extends Module {
   val req_valid = RegInit(false.B)
   val req_reg = Reg(new ReadReq)
 
-  when(io.iread_req.valid){
+  when(io.iread_req.valid) {
     req_reg := io.iread_req.bits
     req_valid := true.B
   }
@@ -71,22 +70,27 @@ class fake(edge: TLEdgeOut) extends Module {
       growPermissions = 0.U
     )
     ._2
+  val is_issued = Reg(Bool())
+  when(io.mem_getPutAcquire.fire){
+    is_issued := true.B
+  }
   io.mem_getPutAcquire.bits := acqu
-  io.mem_getPutAcquire.valid := req_valid
+  io.mem_getPutAcquire.valid := req_valid && !is_issued
 
   io.iread_req.ready := io.mem_getPutAcquire.ready
   // io.iread_req.ready := io.mem_grantReleaseAck.valid
-  
-  when(io.iread_resp.fire){
+
+  when(io.iread_resp.fire) {
     req_valid := false.B
+    is_issued := false.B
     req_reg := (0.U).asTypeOf(new ReadReq)
   }
 
-  //icache out to frontend 
+  // icache out to frontend
   io.mem_grantReleaseAck.ready := true.B
   io.iread_resp.bits.req.addr := req_reg.addr
   io.iread_resp.bits.req.size := req_reg.size
   io.iread_resp.bits.resp.data := io.mem_grantReleaseAck.bits.data
   io.iread_resp.valid := io.mem_grantReleaseAck.valid
-  
+
 }

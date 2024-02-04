@@ -40,15 +40,17 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   val (bus, edge) = outer.node.out.head
 
   val f = Module(new fake(edge))
-  f.io.iread <> io.read_req
-
+  f.io.iread_req <> io.read_req
+  f.io.iread_resp <> io.read_resp
   f.io.mem_getPutAcquire <> bus.a
   f.io.mem_grantReleaseAck <> bus.d
+
 
 }
 class fake(edge: TLEdgeOut) extends Module {
   val io = IO(new Bundle {
-    val iread = Flipped(Decoupled(new ReadReq))
+    val iread_req = Flipped(Decoupled(new ReadReq))
+    val iread_resp = (Decoupled(new ReadResp))
     val mem_getPutAcquire = DecoupledIO(new TLBundleA(edge.bundle))
     val mem_grantReleaseAck = Flipped(DecoupledIO(new TLBundleD(edge.bundle)))
   })
@@ -56,14 +58,19 @@ class fake(edge: TLEdgeOut) extends Module {
   val acqu = edge
     .AcquireBlock(
       fromSource = 0.U,
-      toAddress = io.iread.bits.addr(4, 0),
+      toAddress = io.iread_req.bits.addr,
       lgSize = 2.U,
       growPermissions = 0.U
     )
     ._2
   io.mem_getPutAcquire.bits := acqu
-  io.mem_getPutAcquire.valid := io.iread.valid
-  io.iread.ready := io.mem_getPutAcquire.ready
+  io.mem_getPutAcquire.valid := io.iread_req.valid
+  io.iread_req.ready := io.mem_getPutAcquire.ready
+  
+  
 
   io.mem_grantReleaseAck.ready := true.B
+  io.iread_resp.bits.data := io.mem_grantReleaseAck.bits.data
+  io.iread_resp.valid := io.mem_grantReleaseAck.valid
+  
 }

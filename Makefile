@@ -33,5 +33,5 @@ clean:
 .PHONY:verilog
 
 
-gtk: test
+gtk: 
 	sudo gtkwave vcd.vcd

@@ -11,17 +11,13 @@ class IFU()(implicit p: Parameters) extends Module{
 
   val io = IO(new Bundle{
     val read_req = DecoupledIO(new ReadReq)
-    val read_resp = Flipped(DecoupledIO(new ReadResp))
-
     val redirect = Input(Bool())
   })
 
-  val pc = RegInit(("h80000000".U)(32.W))
-  val npc = RegInit(("h80000000".U)(32.W))
+  val pc = RegInit(("h8000_0000".U)(32.W))
+  val npc = RegInit(("h8000_0000".U)(32.W))
 
   val read = io.read_req
-  val resp = io.read_resp
-  resp := DontCare
 
   when(io.redirect){
     pc := 0.U

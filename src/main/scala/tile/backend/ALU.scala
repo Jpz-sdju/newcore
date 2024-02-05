@@ -360,7 +360,7 @@ class ALU(implicit p: Parameters) extends Module with Setting{
       val src = Vec(2, UInt(XLEN.W))
     }))
     val out = Decoupled(new Bundle{
-      val data = UInt(XLEN.W)
+      val result = UInt(XLEN.W)
     })
   })
 
@@ -375,5 +375,5 @@ class ALU(implicit p: Parameters) extends Module with Setting{
 
   io.in.ready := io.out.ready
   io.out.valid := io.in.valid
-  io.out.bits.data := dataModule.io.result
+  io.out.bits.result := dataModule.io.result
 }

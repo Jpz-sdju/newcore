@@ -3,7 +3,8 @@ import chisel3._, utils._, util._
 import bus._
 import freechips.rocketchip.config._
 import tile._
-class Frontend()(implicit p: Parameters) extends Module {
+import top.Setting
+class Frontend()(implicit p: Parameters) extends Module with Setting{
   val io = IO(new Bundle {
     val iread_req = Decoupled(new ReadReq)
     val iread_resp = Flipped(Decoupled(new ReadRespWithReqInfo))
@@ -12,6 +13,8 @@ class Frontend()(implicit p: Parameters) extends Module {
       val cf = (new CfCtrl)
       val src = (Vec(2, UInt(64.W)))
     })
+
+    val redirect = Flipped(DecoupledIO(UInt(XLEN.W)))
 
   })
 
@@ -33,7 +36,7 @@ class Frontend()(implicit p: Parameters) extends Module {
   iread_resp.ready := true.B
 
   // resp is valid,notify ifu to update pc
-  ifu.io.redirect := false.B
+  ifu.io.redirect <> io.redirect
   ifu.io.read_fin := iread_resp.valid
   // frontend to backend
 

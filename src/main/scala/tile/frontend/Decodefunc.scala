@@ -60,6 +60,7 @@ object SrcType {
     def apply() = UInt(log2Up(num).W)
 
     def isIntExu(fuType: UInt) = !fuType(3)
+    def isAluExu(fuType: UInt) = fuType === alu
     def isJumpExu(fuType: UInt) = fuType === jmp
     def isFpExu(fuType: UInt) = fuType(3, 2) === "b10".U
     def isMemExu(fuType: UInt) = fuType(3, 2) === "b11".U

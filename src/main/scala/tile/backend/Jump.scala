@@ -11,16 +11,24 @@ class Jump(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Bundle {
       val cf = new CfCtrl
-      val src = Vec(2,UInt(XLEN.W))
+      val src = Vec(2, UInt(XLEN.W))
     }))
     val out = Decoupled(new Bundle {
-      val redirect = UInt(64.W)
+      val result = UInt(XLEN.W)
     })
+    val redirect = DecoupledIO(UInt(XLEN.W))
   })
 
   io.out.valid := io.in.valid
   io.in.ready := io.out.ready
 
-  io.out.bits.redirect := io.in.bits.src(0) + io.in.bits.src(1)
+  val is_auipc = JumpOpType.jumpOpisAuipc(io.in.bits.cf.ctrl.fuOpType)
+
+  io.out.bits.result := Mux(is_auipc, io.in.bits.src(0) + io.in.bits.src(1),io.in.bits.src(0) + 4.U)
+  
+  //
+  io.redirect.bits := io.in.bits.src(0) + io.in.bits.src(1)
+  io.redirect.valid := !is_auipc && io.in.valid
+
 
 }

@@ -4,15 +4,16 @@ import chisel3._
 import chisel3.util._
 import freechips.rocketchip.config._
 import bus._
+import top.Setting
 class FetchIO extends Bundle {
   // val 
 }
-class IFU()(implicit p: Parameters) extends Module{
+class IFU()(implicit p: Parameters) extends Module with Setting{
 
   val io = IO(new Bundle{
     val read_req = DecoupledIO(new ReadReq)
     val read_fin = Input(Bool())
-    val redirect = Input(Bool())
+    val redirect = Flipped(DecoupledIO(UInt(XLEN.W)))
   })
 
   val pc = RegInit(("h8000_0000".U)(32.W))
@@ -20,8 +21,11 @@ class IFU()(implicit p: Parameters) extends Module{
 
   val read = io.read_req
 
-  when(io.redirect){
-    pc := 0.U
+  // REDIRECT always ready
+  io.redirect.ready := true.B
+
+  when(io.redirect.valid){
+    pc := io.redirect.bits
   }.elsewhen(io.read_fin){
     pc := pc +4.U
   }

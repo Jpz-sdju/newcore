@@ -41,6 +41,14 @@ class Frontend()(implicit p: Parameters) extends Module {
     val cf = (new CfCtrl)
     val src = (Vec(2, UInt(64.W)))
   }))
+
+  //reg file
+  val regfile = Module(new Regfile())
+  val reg_read_port = regfile.io.readPorts //4
+  val reg_write_port = regfile.io.writePorts //2
+  //choose source data
+  val src_type = decoder_out.bits.ctrl.srcType
+  val src1 = Mux(SrcType.isReg(src_type(0)), reg_read_port)
   
   out_wire.bits.cf := decoder_out.bits
   out_wire.bits.src := DontCare

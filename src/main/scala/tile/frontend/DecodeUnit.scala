@@ -397,7 +397,7 @@ class DecodeUnit(implicit p: Parameters) extends Module with DecodeUnitConstants
     x => {
       val minBits = x._2.minBitsFromInstr(ctrl_flow.instr)
       require(minBits.getWidth == x._2.len)
-      x._1 -> minBits
+      x._1 -> x._2.do_toImm32(minBits) //jpz add
     }
   ))
 

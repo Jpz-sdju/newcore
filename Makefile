@@ -1,3 +1,7 @@
+MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+
+MAKEFILE_DIR := $(dir $(MAKEFILE_PATH))
+
 BUILD_DIR = build
 
 FIR_OPTS = -td $(BUILD_DIR) --output-file Top.v --full-stacktrace
@@ -20,7 +24,7 @@ test:
 	mill chiselModule.test.runMain Exp $(FIR_OPTS)
 	$(V) $(V_FLAG) $(BUILD_DIR)/Top.v  $(CPP) $(OTHER_VSRC)
 	cp $(BUILD_DIR)/obj_dir/VTop $(BUILD_DIR)/emu
-	$(BUILD_DIR)/emu /home/oslab/work/chisel/xs-env/newcore/ready2run/coremark-mt-riscv64-nutshell.bin
+	$(BUILD_DIR)/emu $(MAKEFILE_DIR)/ready2run/coremark-mt-riscv64-nutshell.bin
 help:
 	mill chiselModule.runMain Sim --help
 

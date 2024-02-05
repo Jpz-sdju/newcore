@@ -352,21 +352,15 @@ class AluDataModule(implicit p: Parameters) extends Module with Setting {
   io.mispredict := (io.pred_taken ^ taken) && io.isBranch
 }
 
-class ALU(implicit p: Parameters) extends Module {
+class ALU(implicit p: Parameters) extends Module with Setting{
   val io = IO(new Bundle{
-    // val in = new Bundle{
-      
-    //   val cf = Flipped(Decoupled(new CfCtrl))
-    //   val src = Input(Vec(2, UInt(64.W)))
-    // }
-
 
     val in = Flipped(Decoupled(new Bundle{
       val cf = new CfCtrl
-      val src = Vec(2, UInt(64.W))
+      val src = Vec(2, UInt(XLEN.W))
     }))
     val out = Decoupled(new Bundle{
-      val data = UInt(64.W)
+      val data = UInt(XLEN.W)
     })
   })
 

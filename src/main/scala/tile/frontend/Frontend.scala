@@ -36,26 +36,38 @@ class Frontend()(implicit p: Parameters) extends Module {
   ifu.io.redirect := false.B
   ifu.io.read_fin := iread_resp.valid
   // frontend to backend
-  
+
   val out_wire = Wire(Decoupled(new Bundle {
     val cf = (new CfCtrl)
     val src = (Vec(2, UInt(64.W)))
   }))
 
-  //reg file
+  // reg file
   val regfile = Module(new Regfile())
-  val reg_read_port = regfile.io.readPorts //4
-  val reg_write_port = regfile.io.writePorts //2
-  //choose source data
+  val reg_read_port = regfile.io.readPorts // 4
+  val reg_write_port = regfile.io.writePorts // 2
+  reg_read_port(0).addr := decoder_out.bits.ctrl.lsrc(0)
+  reg_read_port(1).addr := decoder_out.bits.ctrl.lsrc(1)
+
+  // not use
+  reg_read_port(2) := DontCare
+  reg_read_port(3) := DontCare
+  reg_write_port := DontCare
+
+  // choose source data
   val src_type = decoder_out.bits.ctrl.srcType
-  val src1 = Mux(SrcType.isReg(src_type(0)), reg_read_port)
+  val pc = decoder_out.bits.cf.pc
+  val imm = decoder_out.bits.ctrl.imm
+  val src1 = Mux(SrcType.isReg(src_type(0)), reg_read_port(0).data, pc)
+  val src2 = Mux(SrcType.isReg(src_type(1)), reg_read_port(1).data, imm)
+
   
   out_wire.bits.cf := decoder_out.bits
-  out_wire.bits.src := DontCare
+  out_wire.bits.src := VecInit(src1,src2)
   out_wire.valid := decoder_out.valid
   decoder_out.ready := out_wire.ready
-  PipelineConnect(out_wire,io.out, out_wire.valid && io.out.ready, false.B)
+  PipelineConnect(out_wire, io.out, out_wire.valid && io.out.ready, false.B)
 
-  dontTouch(decoder_out)
+
 
 }

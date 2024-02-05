@@ -12,7 +12,7 @@ import tile._
 
 class DecoderIO(implicit p: Parameters) extends Bundle {
   val in = new Bundle { val ctrl_flow = Flipped(Decoupled(new CtrlFlow)) }
-  val out = new Bundle { val cf_ctrl = Decoupled(new CfCtrl) }
+  val out = Decoupled(new PipelineBundle)
 }
 
 class Decoder()(implicit p: Parameters) extends Module  {
@@ -29,8 +29,28 @@ class Decoder()(implicit p: Parameters) extends Module  {
 
   io.in.ctrl_flow.ready := true.B
 
-  //assign out 
-  io.out.cf_ctrl.bits.cf := decode_unit_out.cf
-  io.out.cf_ctrl.bits.ctrl := decode_unit_out.ctrl
-  io.out.cf_ctrl.valid := io.in.ctrl_flow.valid
+  //assign out
+  val fuType = decode_unit_out.ctrl.fuType
+  val fuOpType = decode_unit_out.ctrl.fuOpType
+  val out = io.out.bits
+  out.cf := decode_unit_out
+  out.isAlu := FuType.isAluExu(fuType)
+  out.isBranch := FuType.isAluExu(fuType) && ALUOpType.isBranch(fuOpType)
+  out.isJmp := JumpOpType.jumpOpisJ(fuOpType)
+  out.isAuipc := JumpOpType.jumpOpisAuipc(fuOpType) && FuType.isJumpExu(fuType)
+  out.isLoad := FuType.isLoadStore(fuType) && !FuType.isStoreExu(fuType)
+  out.isStore := FuType.isLoadStore(fuType) && FuType.isStoreExu(fuType)
+  out.rs1 := decode_unit_out.ctrl.lsrc(0)
+  out.rs2 := decode_unit_out.ctrl.lsrc(1)
+  out.Imm := decode_unit_out.ctrl.imm
+  
+  out.Src1 := 0.U //init houmian
+  out.Src2 := 0.U //init houmian
+  out.StoreData := 0.U //rs2
+  out.lsAddr := 0.U //rs1 + offset
+
+  out.lsSize := LSUOpType.size(fuOpType)
+  io.out.valid := io.in.ctrl_flow.valid
+  // io.out.cf_ctrl.bits.cf := decode_unit_out.cf
+  // io.out.cf_ctrl.bits.ctrl := decode_unit_out.ctrl
 }

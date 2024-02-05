@@ -194,6 +194,7 @@ object SrcType {
     def auipc = "b10".U
 //    def call = "b11_011".U
 //    def ret  = "b11_100".U
+    def jumpOpisJ(op: UInt) = (op === jal) || (op === jalr)
     def jumpOpisJalr(op: UInt) = op(0)
     def jumpOpisAuipc(op: UInt) = op(1)
   }

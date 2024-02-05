@@ -9,7 +9,7 @@ import top.Setting
 
 class ReadReq extends Bundle with Setting{
   val addr = UInt(PAddrBits.W)
-  val size = UInt(3.W)
+  val size = UInt(4.W)
 }
 
 class ReadResp extends Bundle with Setting{

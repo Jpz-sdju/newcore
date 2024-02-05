@@ -59,6 +59,7 @@ object ColorPrint extends App {
 class CoreWithL1()(implicit p: Parameters) extends LazyModule {
 
   val icache = LazyModule(new Icache())
+  val dcache = LazyModule(new Dcache())
   // axi4ram slave node
   val device = new MemoryDevice
   val memRange =
@@ -86,7 +87,12 @@ class CoreWithL1()(implicit p: Parameters) extends LazyModule {
       )
     )
   )
-  memAXI4SlaveNode := TLToAXI4() := TLBuffer() := TLCacheCork() := icache.node
+  val xbar = TLXbar()
+  xbar := TLCacheCork() :=icache.node
+  xbar := TLCacheCork() :=dcache.node
+
+  // memAXI4SlaveNode := TLToAXI4() := TLBuffer() := TLCacheCork(TLCacheCorkParams(true)) :=* xbar
+  memAXI4SlaveNode := TLToAXI4() := TLBuffer():= xbar
 
   lazy val module = new CoreWithL1Imp(this)
 
@@ -103,10 +109,14 @@ class CoreWithL1Imp(outer: CoreWithL1) extends LazyModuleImp(outer) {
   val iread_req = io.iread_req
   val iread_resp = io.iread_resp
   val icache = outer.icache.module
+  val dcache = outer.dcache.module
 
   //icache reslut must connect to frontend
   icache.io.read_req <> frontend.io.iread_req
   icache.io.read_resp <> frontend.io.iread_resp
+
+  dcache.io.read_req <> backend.io.read_req
+  dcache.io.read_resp <> backend.io.read_resp
 
 
   frontend.io.out <> backend.io.in

@@ -87,5 +87,5 @@ class PipelineBundle(implicit p: Parameters) extends Bundle with Setting{
   val lsAddr = UInt(XLEN.W)
   val lsSize = UInt(2.W)
 
-
+  val WRITE_BACK = UInt(XLEN.W) //could assign at exu or lsu!!
 }

@@ -11,11 +11,11 @@ import freechips.rocketchip.amba.axi4._
 import device._
 import top.Setting
 
-class Icache()(implicit p: Parameters) extends LazyModule {
+class Dcache()(implicit p: Parameters) extends LazyModule {
   val clientParameters = TLMasterPortParameters.v1(
     Seq(
       TLMasterParameters.v1(
-        name = "icache",
+        name = "Dcache",
         sourceId = IdRange(0, 1 << 1),
         supportsProbe = TransferSizes(64)
         // supportsGet = TransferSizes(LineSize),
@@ -29,44 +29,44 @@ class Icache()(implicit p: Parameters) extends LazyModule {
 
   val node = TLClientNode(Seq(clientParameters))
 
-  lazy val module = new IcacheImpl(this)
+  lazy val module = new DcacheImpl(this)
 }
-class IcacheImpl(outer: Icache)(implicit p: Parameters)
+class DcacheImpl(outer: Dcache)(implicit p: Parameters)
     extends LazyModuleImp(outer) {
   val io = IO(new Bundle {
     val read_req = Flipped(DecoupledIO(new ReadReq))
-    val read_resp = DecoupledIO((new ReadRespWithReqInfo))
+    val read_resp = DecoupledIO((new ReadResp))
   })
 
   val (bus, edge) = outer.node.out.head
 
-  val f = Module(new ifake(edge))
-  f.io.iread_req <> io.read_req
-  f.io.iread_resp <> io.read_resp
+  val f = Module(new fake(edge))
+  f.io.read_req <> io.read_req
+  f.io.read_resp <> io.read_resp
   f.io.mem_getPutAcquire <> bus.a
   f.io.mem_grantReleaseAck <> bus.d
 
 }
-class ifake(edge: TLEdgeOut) extends Module with Setting{
+class fake(edge: TLEdgeOut) extends Module with Setting{
   val io = IO(new Bundle {
-    val iread_req = Flipped(Decoupled(new ReadReq))
-    val iread_resp = (DecoupledIO(new ReadRespWithReqInfo))
+    val read_req = Flipped(Decoupled(new ReadReq))
+    val read_resp = (DecoupledIO(new ReadResp))
     val mem_getPutAcquire = DecoupledIO(new TLBundleA(edge.bundle))
     val mem_grantReleaseAck = Flipped(DecoupledIO(new TLBundleD(edge.bundle)))
   })
-  val req = io.iread_req.bits
+  val req = io.read_req.bits
   val req_valid = RegInit(false.B)
   val req_reg = Reg(new ReadReq)
 
   //register this req
-  when(io.iread_req.valid) {
+  when(io.read_req.valid) {
     req_reg := req
     req_valid := true.B
   }
 
   val acqu = edge
     .AcquireBlock(
-      fromSource = 0.U,
+      fromSource = 1.U,
       toAddress = req_reg.addr,
       lgSize = 2.U,
       growPermissions = 0.U
@@ -79,10 +79,10 @@ class ifake(edge: TLEdgeOut) extends Module with Setting{
   }
   io.mem_getPutAcquire.bits := acqu
   io.mem_getPutAcquire.valid := req_valid && !is_issued
-  io.iread_req.ready := io.mem_getPutAcquire.ready
+  io.read_req.ready := io.mem_getPutAcquire.ready
 
   //When resp is fire,could accept next req
-  when(io.iread_resp.fire) {
+  when(io.read_resp.fire) {
     req_valid := false.B
     is_issued := false.B
     req_reg := (0.U).asTypeOf(new ReadReq)
@@ -91,11 +91,9 @@ class ifake(edge: TLEdgeOut) extends Module with Setting{
   //With 32bits fetch size,WE MUST Select data!
 
   val out_data = Mux(req_reg.addr(2),io.mem_grantReleaseAck.bits.data(XLEN-1, 32), io.mem_grantReleaseAck.bits.data(31, 0))
-  // icache out to frontend
+  // Dcache out to frontend
   io.mem_grantReleaseAck.ready := true.B
-  io.iread_resp.bits.req.addr := req_reg.addr
-  io.iread_resp.bits.req.size := req_reg.size
-  io.iread_resp.bits.resp.data := out_data
-  io.iread_resp.valid := io.mem_grantReleaseAck.valid
+  io.read_resp.bits.data := out_data
+  io.read_resp.valid := io.mem_grantReleaseAck.valid
 
 }

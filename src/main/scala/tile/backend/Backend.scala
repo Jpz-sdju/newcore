@@ -15,6 +15,9 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
     val in = Flipped(Decoupled(new PipelineBundle))
 
     val redirect = (DecoupledIO(UInt(XLEN.W)))
+
+    val read_req = Decoupled(new ReadReq)
+    val read_resp = Flipped(Decoupled(new ReadResp))
   })
   val in = io.in.bits
   val pc = io.in.bits.cf.cf.pc
@@ -44,7 +47,8 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   val mem_in = Wire(Decoupled(new PipelineBundle))
   
   exu_out.bits := io.in.bits
-  exu_out.bits.lsAddr := in.Src1 + in.Imm
+  exu_out.bits.lsAddr := in.Src1 + in.Imm //init
+  exu_out.bits.WRITE_BACK := Mux(in.isAlu, alu.io.out.bits.result,Mux(jal || jalr, pc+4.U, Mux( in.isAuipc, pc_with_offset, 0.U)))
   exu_out.valid := io.in.valid
   
   //ready transmit to frontedn
@@ -53,10 +57,13 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   EX to DCACHE
   */
   PipelineConnect(exu_out, mem_in, mem_in.fire,false.B)
+  val lsu = Module(new LSU)
+  lsu.io.in <> mem_in
+  lsu.io.read_req <> io.read_req
+
+  io.read_resp <> DontCare
   
-  
-  mem_in.ready := true.B
-  dontTouch(mem_in)
+
   alu.io.out.ready := true.B
   dontTouch(alu.io.out)
   dontTouch(io.in)

@@ -16,9 +16,10 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
     val in = Flipped(Decoupled(new PipelineBundle))
 
     val read_req = Decoupled(new ReadReq)
-    // val read_resp = Decoupled(new ReadResp)
+    val read_resp = Flipped(Decoupled(new ReadResp))
   })
     io.in.ready := true.B
+    io.read_resp.ready := true.B
 
     val in = io.in.bits
     val load = in.isLoad
@@ -30,4 +31,8 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
     io.read_req.valid := need_op
     io.read_req.bits.addr := in.lsAddr
     io.read_req.bits.size := size
+
+
+
+    dontTouch(io.in)
 }

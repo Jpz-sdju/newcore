@@ -50,7 +50,8 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   exu_out.bits.lsAddr := in.Src1 + in.Imm //init
   exu_out.bits.WRITE_BACK := Mux(in.isAlu, alu.io.out.bits.result,Mux(jal || jalr, pc+4.U, Mux( in.isAuipc, pc_with_offset, 0.U)))
   exu_out.valid := io.in.valid
-  
+
+  alu.io.out.ready := exu_out.ready  
   //ready transmit to frontedn
   io.in.ready := exu_out.ready
   /* 
@@ -60,11 +61,11 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   val lsu = Module(new LSU)
   lsu.io.in <> mem_in
   lsu.io.read_req <> io.read_req
+  lsu.io.read_resp <> io.read_resp
 
-  io.read_resp <> DontCare
-  
 
   alu.io.out.ready := true.B
-  dontTouch(alu.io.out)
   dontTouch(io.in)
+  dontTouch(exu_out)
+  dontTouch(mem_in)
 }

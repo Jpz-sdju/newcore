@@ -377,5 +377,5 @@ class ALU(implicit p: Parameters) extends Module with Setting{
   io.in.ready := io.out.ready
   io.out.valid := io.in.valid
   io.out.bits.result := dataModule.io.result
-  io.taken_branch := dataModule.io.taken
+  io.taken_branch := dataModule.io.taken && isBranch //jpz modify
 }

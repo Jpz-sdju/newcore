@@ -41,19 +41,19 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   })
 
   val (bus, edge) = outer.node.out.head
-
-  // ade connect
   val ade = Module(new iadeChannel(edge))
-  ade.io.iread_req <> io.read_req // in
-  ade.io.iread_resp <> io.read_resp // out
+  val fsm = Module(new CacheFSM)
+  fsm.io.iread_req <> io.read_req
+  fsm.io.resp_from_achannel <> ade.io.iread_resp
+  fsm.io.req_to_achannel <> ade.io.iread_req
+  fsm.io.data_to_frontend <> io.read_resp
+  // ade connect
   ade.io.sourceA <> bus.a
   ade.io.sinkD <> bus.d
   ade.io.sourceE <> bus.e
 
   // icache data refill
 
-  val fsm = Module(new CacheFSM)
-  fsm.io.iread_req <> io.read_req
 }
 
 

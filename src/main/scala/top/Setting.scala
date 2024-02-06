@@ -14,6 +14,7 @@ trait Setting {
   val DataBytes = DataBits / 8
   val FetchBytes = 8
 
+  val ways = 4
 
 
 }

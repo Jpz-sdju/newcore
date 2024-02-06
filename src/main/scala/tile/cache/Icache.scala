@@ -11,6 +11,7 @@ import freechips.rocketchip.amba.axi4._
 import device._
 import top.Setting
 import dataclass.data
+import freechips.rocketchip.diplomaticobjectmodel.model.U
 
 class Icache()(implicit p: Parameters) extends LazyModule {
   val clientParameters = TLMasterPortParameters.v1(
@@ -51,36 +52,56 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
 
   // icache data refill
   val array = Module(new IcacheArray)
-  array.io.iread_resp <> DontCare
-  array.io.iread_req <> DontCare
-  array.io.iwrite_tag_req <> DontCare
-  array.io.iwrite_data_req <> DontCare
-  array.io.iwrite_meta_req <> DontCare
+  array.io.iread_req <> io.read_req
+  array.io.array_read_resp <> DontCare
+  array.io.array_write_req <> DontCare
 }
 
-class IcacheArray() extends Module {
+class IcacheArray() extends Module with Setting {
   val io = IO(new Bundle {
     // set 16kb,4ways,not banked,linesize = 64B
     val iread_req = Flipped(Decoupled(new ReadReq))
-    val iread_resp = DecoupledIO(new ReadResp)
 
-    val iwrite_tag_req = Flipped(DecoupledIO(new WriteBus(new tagBundle)))
-    val iwrite_data_req = Flipped(DecoupledIO(new WriteBus(new dataBundle)))
-    val iwrite_meta_req = Flipped(DecoupledIO(new WriteBus(new metaBundle)))
-
+    val array_read_resp = DecoupledIO(new ArrayReadBundle)
+    val array_write_req = Flipped(Decoupled(new iRefillBundle))
   })
-  io.iread_resp <> DontCare
-  io.iread_req <> DontCare
-  io.iwrite_tag_req <> DontCare
-  io.iwrite_data_req <> DontCare
-  io.iwrite_meta_req <> DontCare
+  val req = io.iread_req
+  val resp = io.array_read_resp
 
-  val dataArray = Mem((16 / 4) * 1024, Vec(4, UInt((64 * 8).W)))
-  val tagArray = Mem((16 / 4) * 1024, Vec(2, UInt((32 - 6 - 6).W)))
-  val metaArray = Mem((16 / 4) * 1024, Vec(2, UInt((2).W)))
+  // three arrays
+  val dataArray = Array.fill(8)(
+    SyncReadMem(64, Vec(ways, UInt((64).W)))
+  )
+  val tagArray = SyncReadMem(64, Vec(ways, UInt((32 - 6 - 6).W)))
+  val metaArray = SyncReadMem(64, Vec(ways, UInt((2).W)))
 
-  val s = dataArray.read(1.U)
-  dontTouch(s)
+  // 0-6 offset,6 idx,20tag
+  val bank_idx = io.iread_req.bits.addr(5, 3)
+  val set_idx = io.iread_req.bits.addr(11, 6)
+  val read_tag = Wire(Vec(4, UInt(20.W)))
+  val read_data = WireInit(VecInit(Seq.fill(ways)(0.U(64.W))))
+  val read_meta = Wire(Vec(4, UInt(2.W)))
+
+  for (id <- 0 until 8) {
+    val cond = id.U === bank_idx
+    when(cond) {
+      read_data := dataArray(id).read(set_idx, cond.asBool)
+    }
+  }
+  read_tag := tagArray.read(set_idx)
+  read_meta := metaArray.read(set_idx)
+
+  // assign 4 ways RESULT to outer
+  resp.bits.data := read_data
+  resp.bits.tag := read_tag
+  resp.bits.meta := read_meta
+  resp.valid := RegNext(req.valid)
+
+  dontTouch(read_data)
+
+  req.ready := true.B
+  io.array_read_resp <> DontCare
+  io.array_write_req <> DontCare
 }
 class iadeChannel(edge: TLEdgeOut) extends Module with Setting {
   val io = IO(new Bundle {

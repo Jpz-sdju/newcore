@@ -42,7 +42,7 @@ class iRefillBundle extends Bundle {
   val data = UInt(64.W)
   val meta = UInt(2.W)
 }
-class ArrayReadBundle extends Bundle with Setting{
+class ArrayRespBundle extends Bundle with Setting{
   val tag = Vec(ways ,UInt(20.W))
   val data = Vec(ways, UInt(XLEN.W))
   val meta = Vec(ways, UInt(2.W))

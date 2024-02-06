@@ -23,18 +23,21 @@ class ReadRespWithReqInfo extends Bundle with Setting{
   val resp = new ReadResp
 }
 
-class WriteBus extends Bundle with Setting{
+class WriteBus[T <: Bundle](bun : T) extends Bundle with Setting{
 //  val io = IO //addr size mask ...
 
   val addr = Output(UInt(PAddrBits.W))
-  val data = Output(UInt(XLEN.W))
+  val data = Output(bun)
   val size = Output(UInt(log2Up(XLEN/8).W))
-
   val mask = Output(UInt(log2Up(XLEN/8).W))
 
 }
-// class MemBus extends Bundle with Setting{
-//     val readBus = Decoupled(new ReadBus)
-//     val writeBus = Decoupled(new WriteBus)
-
-// }
+class tagBundle extends Bundle{
+  val tag = UInt(20.W)
+}
+class dataBundle extends Bundle with Setting{
+  val data = UInt(XLEN.W)
+}
+class metaBundle extends Bundle{
+  val meta = UInt(2.W)
+}

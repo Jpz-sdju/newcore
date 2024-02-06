@@ -10,6 +10,7 @@ import freechips.rocketchip.tilelink._
 import freechips.rocketchip.amba.axi4._
 import device._
 import top.Setting
+import dataclass.data
 
 class Icache()(implicit p: Parameters) extends LazyModule {
   val clientParameters = TLMasterPortParameters.v1(
@@ -40,15 +41,48 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
 
   val (bus, edge) = outer.node.out.head
 
-  val f = Module(new ifake(edge))
-  f.io.iread_req <> io.read_req
-  f.io.iread_resp <> io.read_resp
-  f.io.sourceA <> bus.a
-  f.io.sinkD <> bus.d
-  f.io.sourceE <> bus.e
+  // ade connect
+  val ade = Module(new iadeChannel(edge))
+  ade.io.iread_req <> io.read_req // in
+  ade.io.iread_resp <> io.read_resp // out
+  ade.io.sourceA <> bus.a
+  ade.io.sinkD <> bus.d
+  ade.io.sourceE <> bus.e
 
+  // icache data refill
+  val array = Module(new IcacheArray)
+  array.io.iread_resp <> DontCare
+  array.io.iread_req <> DontCare
+  array.io.iwrite_tag_req <> DontCare
+  array.io.iwrite_data_req <> DontCare
+  array.io.iwrite_meta_req <> DontCare
 }
-class ifake(edge: TLEdgeOut) extends Module with Setting{
+
+class IcacheArray() extends Module {
+  val io = IO(new Bundle {
+    // set 16kb,4ways,not banked,linesize = 64B
+    val iread_req = Flipped(Decoupled(new ReadReq))
+    val iread_resp = DecoupledIO(new ReadResp)
+
+    val iwrite_tag_req = Flipped(DecoupledIO(new WriteBus(new tagBundle)))
+    val iwrite_data_req = Flipped(DecoupledIO(new WriteBus(new dataBundle)))
+    val iwrite_meta_req = Flipped(DecoupledIO(new WriteBus(new metaBundle)))
+
+  })
+  io.iread_resp <> DontCare
+  io.iread_req <> DontCare
+  io.iwrite_tag_req <> DontCare
+  io.iwrite_data_req <> DontCare
+  io.iwrite_meta_req <> DontCare
+
+  val dataArray = Mem((16 / 4) * 1024, Vec(4, UInt((64 * 8).W)))
+  val tagArray = Mem((16 / 4) * 1024, Vec(2, UInt((32 - 6 - 6).W)))
+  val metaArray = Mem((16 / 4) * 1024, Vec(2, UInt((2).W)))
+
+  val s = dataArray.read(1.U)
+  dontTouch(s)
+}
+class iadeChannel(edge: TLEdgeOut) extends Module with Setting {
   val io = IO(new Bundle {
     val iread_req = Flipped(Decoupled(new ReadReq))
     val iread_resp = (DecoupledIO(new ReadRespWithReqInfo))
@@ -60,7 +94,7 @@ class ifake(edge: TLEdgeOut) extends Module with Setting{
   val req_valid = RegInit(false.B)
   val req_reg = Reg(new ReadReq)
 
-  //register this req
+  // register this req
   when(io.iread_req.valid) {
     req_reg := req
     req_valid := true.B
@@ -74,15 +108,15 @@ class ifake(edge: TLEdgeOut) extends Module with Setting{
       growPermissions = 0.U
     )
     ._2
-  //grant ack
+  // grant ack
   val sinkD = RegEnable(io.sinkD.bits.sink, io.sinkD.fire)
   val grantAck = edge.GrantAck(
     toSink = sinkD
   )
 
-  //When Get,Put or Acquire is issued,CAN NOT REMAIN VALID!
+  // When Get,Put or Acquire is issued,CAN NOT REMAIN VALID!
   val is_issued = Reg(Bool())
-  when(io.sourceA.fire){
+  when(io.sourceA.fire) {
     is_issued := true.B
   }
   io.sourceA.bits := acqu
@@ -93,16 +127,20 @@ class ifake(edge: TLEdgeOut) extends Module with Setting{
   io.sourceE.bits := grantAck
   io.sourceE.valid := io.iread_resp.fire
 
-  //When resp is fire,could accept next req
+  // When resp is fire,could accept next req
   when(io.iread_resp.fire) {
     req_valid := false.B
     is_issued := false.B
     req_reg := (0.U).asTypeOf(new ReadReq)
   }
 
-  //With 32bits fetch size,WE MUST Select data!
+  // With 32bits fetch size,WE MUST Select data!
 
-  val out_data = Mux(req_reg.addr(2),io.sinkD.bits.data(XLEN-1, 32), io.sinkD.bits.data(31, 0))
+  val out_data = Mux(
+    req_reg.addr(2),
+    io.sinkD.bits.data(XLEN - 1, 32),
+    io.sinkD.bits.data(31, 0)
+  )
   // icache out to frontend
   io.sinkD.ready := true.B
   io.iread_resp.bits.req.addr := req_reg.addr

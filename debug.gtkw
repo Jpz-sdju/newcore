@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Feb  7 18:34:39 2024
+[*] Wed Feb  7 20:42:10 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Wed Feb  7 18:33:04 2024"
-[dumpfile_size] 4087258
+[dumpfile_mtime] "Wed Feb  7 20:40:57 2024"
+[dumpfile_size] 3876927
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 30
-[size] 1408 765
-[pos] 14 9
-*-2.723291 36 44 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 56
+[size] 1616 883
+[pos] -1 -1
+*-2.723291 63 44 64 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Top.
 [treeopen] TOP.Top.core.
@@ -23,7 +23,7 @@
 [sst_width] 392
 [signals_width] 511
 [sst_expanded] 1
-[sst_vpaned_height] 425
+[sst_vpaned_height] 512
 @22
 TOP.Top.core.l_core.frontend.ifu.pc[31:0]
 TOP.Top.core.l_core.frontend.ifu.pc[31:0]
@@ -31,37 +31,46 @@ TOP.Top.core.l_core.frontend.ifu.pc[31:0]
 -
 -
 -
-@22
+@23
 TOP.Top.core.l_core.backend.exu_out_bits_cf_cf_pc[38:0]
 TOP.Top.core.l_core.backend.exu_out_bits_cf_cf_instr[31:0]
-@200
--
-@28
-TOP.Top.core.l_core.icache.fsm.io_iread_req_valid
-@22
-TOP.Top.core.l_core.icache.fsm.io_iread_req_bits_addr[31:0]
-@200
--
-@22
-TOP.Top.core.l_core.icache.fsm.array.io_array_read_resp_bits_data_0[63:0]
-@28
-TOP.Top.core.l_core.icache.fsm.array.io_array_read_resp_valid
-@200
--
-@22
-TOP.Top.core.l_core.backend.exu_out_bits_cf_cf_pc[38:0]
-TOP.Top.core.l_core.backend.exu_out_bits_cf_cf_instr[31:0]
-@200
--
-@28
-TOP.Top.core.l_core.icache.fsm.array.io_iread_req_valid
-@22
-TOP.Top.core.l_core.icache.fsm.array.io_iread_req_bits_addr[31:0]
 @201
 -
-@28
-TOP.Top.core.l_core.icache.fsm.array.io_array_read_resp_valid
-@22
-TOP.Top.core.l_core.icache.fsm.array.io_array_read_resp_bits_data_0[63:0]
+@29
+TOP.Top.core.l_core.icache.fsm.io_iread_req_valid
+@23
+TOP.Top.core.l_core.icache.fsm.io_iread_req_bits_addr[31:0]
+@201
+-
+@29
+TOP.Top.core.l_core.icache.fsm.miss
+@201
+-
+-
+@23
+TOP.Top.core.l_core.icache.fsm.array.set_idx[5:0]
+@29
+TOP.Top.core.l_core.icache.fsm.array.bank_idx[2:0]
+@201
+-
+@23
+TOP.Top.core.l_core.icache.fsm.array.bank_write_data_0[63:0]
+TOP.Top.core.l_core.icache.fsm.array.bank_write_data_1[63:0]
+TOP.Top.core.l_core.icache.fsm.array.bank_write_data_2[63:0]
+TOP.Top.core.l_core.icache.fsm.array.bank_write_data_3[63:0]
+@29
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_0
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_1
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_2
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_3
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_4
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_5
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_6
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_bits_bank_mask_7
+@201
+-
+@29
+TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_valid
+TOP.Top.core.l_core.icache.fsm.array.io_iread_req_valid
 [pattern_trace] 1
 [pattern_trace] 0

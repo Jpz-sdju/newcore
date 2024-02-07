@@ -36,21 +36,25 @@ class IcacheArray() extends Module with Setting {
   // 0-6 offset,6 idx,20tag
   val bank_idx = io.iread_req.bits.addr(5, 3)
   val set_idx = io.iread_req.bits.addr(11, 6)
-  val read_tag = Reg(Vec(4, UInt(20.W)))
-  val read_data = RegInit(VecInit(Seq.fill(ways)(0.U(64.W))))
-  val read_meta = Reg(Vec(4, UInt(2.W)))
+  val read_tag = Wire(Vec(4, UInt(20.W)))
+  val read_meta = Wire(Vec(4, UInt(2.W)))
 
-  for (id <- 0 until 8) {
-    val cond = (id.U === bank_idx) && req.valid
-    when(cond) {
-      read_data := dataArray(id).read(set_idx, cond.asBool)
-    }
-  }
+  val re1 = dataArray(0).read(set_idx,bank_idx === 0.U)
+  val re2 = dataArray(1).read(set_idx,bank_idx === 1.U)
+  val re3 = dataArray(2).read(set_idx,bank_idx === 2.U)
+  val re4 = dataArray(3).read(set_idx,bank_idx === 3.U)
+  val re5 = dataArray(4).read(set_idx,bank_idx === 4.U)
+  val re6 = dataArray(5).read(set_idx,bank_idx === 5.U)
+  val re7 = dataArray(6).read(set_idx,bank_idx === 6.U)
+  val re8 = dataArray(7).read(set_idx,bank_idx === 7.U)
+
+  val seqq = VecInit(re1,re2,re3,re4,re5,re6,re7,re8)
   read_tag := tagArray.read(set_idx)
   read_meta := metaArray.read(set_idx)
-  dontTouch(read_data)
+  dontTouch(bank_idx)
+  dontTouch(set_idx)
   // assign 4 ways RESULT to outer
-  resp.bits.data := read_data
+  resp.bits.data := seqq(bank_idx)
   resp.bits.tag := read_tag
   resp.bits.meta := read_meta
   resp.valid := RegNext(req.valid)
@@ -76,7 +80,7 @@ class IcacheArray() extends Module with Setting {
   for (bank <- 0 until 8) {
     bank_write_data(bank.U) := 
       write_req.bits.data(((bank + 1) * 64 - 1) % 256,(bank * 64) % 256)
-    write_4ways_data(bank)(waymask_uint) := bank_write_data(bank)
+    write_4ways_data(bank.U)(waymask_uint) := bank_write_data(bank)
   }
   for (id <- 0 until 8) {
     val cond = bankmask(id.U) && write_req.valid

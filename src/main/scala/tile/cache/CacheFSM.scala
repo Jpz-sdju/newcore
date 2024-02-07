@@ -94,6 +94,9 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   // only when state is idle,could let more req in!
   io.iread_req.ready := (state === s_idle)
 
+  //NOTE!:must clean low 6bits,clear in iadeChannel.scala
+  val this_is_first_grant = !req_reg.addr(5)
+  val this_word = req_reg.addr(4,2)
   io.req_to_Achannel.bits := req_reg
   io.req_to_Achannel.valid := state === s_send_down
 
@@ -104,20 +107,25 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   val array_write = array.io.array_write_req
   array_write.bits.bank_mask := Mux(first, "b00001111".U, "b11110000".U).asBools
   array_write.bits.way_mask := ("b0001".U(4.W)).asBools
-  array_write.bits.data := io.resp_from_Achannel.bits.data
+  array_write.bits.data := resp.bits.data
   array_write.bits.tag := req_reg.addr(31,12)
   array_write.bits.meta := "b11".U
   array_write.valid := (first || done) && resp.valid
   dontTouch(array_write)
 
-  //need to reg first grant
-  val first_grant_data = RegEnable(io.resp_from_Achannel.bits.data(31, 0), resp.valid && first)
   //read word idx,compiatble for now newcore
   val word_idx = req_reg.addr(2)
   val muxWord = Mux(word_idx, array_resp.bits.data(0)(63,32), array_resp.bits.data(0)(31,0))
 
+  //need to reg first grant data
+  //mux grant data
+  val first_grant_data = RegEnable(resp.bits.data, resp.valid && first)
+  val first_word = first_grant_data >> (this_word << 5)
+  val sec_word = (resp.bits.data & Fill(256,done) ) >> (this_word << 5)
+  val word = Mux(this_is_first_grant,first_word,sec_word)
+
   io.data_to_frontend.bits.req := req_reg
-  io.data_to_frontend.bits.resp.data := Mux(miss,first_grant_data, muxWord)
+  io.data_to_frontend.bits.resp.data := Mux(miss, word, muxWord)
   io.data_to_frontend.valid := Mux(miss, resp.valid && done, array_resp_valid)
   io.resp_from_Achannel.ready := io.data_to_frontend.ready
 }

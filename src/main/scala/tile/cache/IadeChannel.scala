@@ -39,7 +39,7 @@ class iadeChannel(edge: TLEdgeOut) extends Module with Setting {
   val acqu = edge
     .AcquireBlock(
       fromSource = 0.U,
-      toAddress = req_reg.addr,
+      toAddress = Cat(req_reg.addr(31,6), 0.U(6.W)),
       lgSize = 6.U,
       growPermissions = 0.U
     )

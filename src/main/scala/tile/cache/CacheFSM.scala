@@ -12,6 +12,7 @@ import device._
 import top.Setting
 import dataclass.data
 import freechips.rocketchip.diplomaticobjectmodel.model.U
+import os.stat
 
 class CacheFSM()(implicit p: Parameters) extends Module {
   val io = IO(new Bundle {
@@ -49,7 +50,6 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   array.io.iread_req.bits.size := req.bits.size
   array.io.iread_req.valid := req.valid
 
-  array.io.array_write_req <> DontCare
 
   // array read result
   val array_resp = array.io.array_read_resp
@@ -64,33 +64,47 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   val res_hit = VecInit(
     (meta_hit.zip(tag_hit).map { case (a, b) => (a && b).asBool })
   )
+  val miss = !res_hit.asUInt.orR
 
-  io.req_to_Achannel.bits := req_reg
-  // only when state is idle,could let more req in!
-  io.iread_req.ready := (state === s_idle)
-
+  
+  
   // when suocun de valid
-
   when(req_valid) {
     // when reg_valid,if miss
-    when(!(res_hit.asUInt.orR)) {
+    when(miss) {
       when(state === s_idle && !resp.fire) {
         state := s_send_down
       }
       when(state === s_send_down && io.req_to_Achannel.fire) {
         state := s_wating
       }
-      when(state === s_wating && resp.fire) {
+      when(state === s_wating && resp.fire && first) {
+        state := s_refilling
+      }
+      when(state === s_refilling && resp.fire && done){
         state := s_idle
       }
     }
-
+    
   }
+  
+  // only when state is idle,could let more req in!
+  io.iread_req.ready := (state === s_idle)
 
+  io.req_to_Achannel.bits := req_reg
   io.req_to_Achannel.valid := state === s_send_down
 
-  dontTouch(meta_hit)
-  dontTouch(tag_hit)
+
+  /* 
+    ARRAY WRITE REGION  
+   */
+  val array_write = array.io.array_write_req
+  array_write.bits.bank_mask := Mux(first, "b00001111".U, "b11110000".U).asBools
+  array_write.bits.way_mask := ("b0001".U(4.W)).asBools
+  array_write.bits.data := io.resp_from_Achannel.bits.data
+  array_write.bits.tag := req_reg.addr(31,12)
+  array_write.bits.meta := "b11".U
+  array_write.valid := first || done
 
   io.data_to_frontend.bits.req := req_reg
   io.data_to_frontend.bits.resp.data := io.resp_from_Achannel.bits.data(31, 0)

@@ -15,6 +15,7 @@ trait Setting {
   val FetchBytes = 8
 
   val ways = 4
+  val banks = 8
 
 
 }

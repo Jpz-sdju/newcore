@@ -37,10 +37,12 @@ class WriteBus[T <: Bundle](bun: T) extends Bundle with Setting {
 
 }
 
-class iRefillBundle extends Bundle {
+class ArrayWriteBundle extends Bundle {
   val tag = UInt(20.W)
-  val data = UInt(64.W)
+  val data = UInt(256.W)
   val meta = UInt(2.W)
+  val bank_mask = Vec(8, Bool())
+  val way_mask = Vec(4, Bool())
 }
 
 //icache and dcache UNIFORM!

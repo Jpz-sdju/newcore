@@ -39,3 +39,6 @@ clean:
 
 gtk: 
 	sudo gtkwave vcd.vcd
+
+ntk:
+	sudo gtkwave $(shell find ~/xs-env/NutShell/build/2*)

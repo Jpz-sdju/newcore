@@ -92,7 +92,7 @@ class CoreWithL1()(implicit p: Parameters) extends LazyModule {
   xbar := TLCacheCork() :=dcache.node
 
   // memAXI4SlaveNode := TLToAXI4() := TLBuffer() := TLCacheCork(TLCacheCorkParams(true)) :=* xbar
-  memAXI4SlaveNode := AXI4UserYanker() :=TLToAXI4() := TLBuffer():= TLBuffer():= xbar
+  memAXI4SlaveNode := AXI4UserYanker() := AXI4Buffer() :=TLToAXI4() := TLWidthWidget(32) := TLBuffer():= TLBuffer():= xbar
 
   lazy val module = new CoreWithL1Imp(this)
 

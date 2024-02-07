@@ -53,7 +53,7 @@ class IcacheArray() extends Module with Setting {
   read_meta := metaArray.read(set_idx)
   dontTouch(bank_idx)
   dontTouch(set_idx)
-  // assign 4 ways RESULT to outer
+  // assign 4 ways RESULT to outer, bank_idx MUST BE REG!!!!!!
   resp.bits.data := seqq(RegNext(bank_idx))
   resp.bits.tag := read_tag
   resp.bits.meta := read_meta

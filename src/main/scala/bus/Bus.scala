@@ -16,15 +16,15 @@ class ReadResp extends Bundle with Setting {
   val data = UInt(XLEN.W)
 
 }
-class ArrayReadResp[T <: Bundle](bun: T) extends Bundle with Setting {
-
-  val data = Output(bun)
-
-}
 class ReadRespWithReqInfo extends Bundle with Setting {
 
   val req = new ReadReq
   val resp = new ReadResp
+}
+
+class ReadRespFromDown extends Bundle with Setting {
+
+  val data = UInt(256.W)
 }
 
 class WriteBus[T <: Bundle](bun: T) extends Bundle with Setting {
@@ -42,6 +42,8 @@ class iRefillBundle extends Bundle {
   val data = UInt(64.W)
   val meta = UInt(2.W)
 }
+
+//icache and dcache UNIFORM!
 class ArrayRespBundle extends Bundle with Setting{
   val tag = Vec(ways ,UInt(20.W))
   val data = Vec(ways, UInt(XLEN.W))

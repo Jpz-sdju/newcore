@@ -18,10 +18,10 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   val io = IO(new Bundle {
     val iread_req = Flipped(Decoupled(new ReadReq))
     // if miss
-    val req_to_achannel = Decoupled(new ReadReq)
+    val req_to_Achannel = Decoupled(new ReadReq)
 
     // data from downward refill
-    val resp_from_achannel = Flipped(DecoupledIO(new ReadRespWithReqInfo))
+    val resp_from_Achannel = Flipped(DecoupledIO(new ReadRespFromDown))
 
     // data to frontedn
     val data_to_frontend = (DecoupledIO(new ReadRespWithReqInfo))
@@ -31,7 +31,7 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   val req_reg = RegEnable(req.bits, req.fire)
   val req_valid = RegEnable(req.valid, req.fire)
 
-  val resp = io.resp_from_achannel
+  val resp = io.resp_from_Achannel
 
   val (s_idle :: s_checking
     :: s_send_down :: s_wating :: s_refilling :: Nil) =
@@ -60,7 +60,7 @@ class CacheFSM()(implicit p: Parameters) extends Module {
     (meta_hit.zip(tag_hit).map { case (a, b) => (a && b).asBool })
   )
 
-  io.req_to_achannel.bits := req_reg
+  io.req_to_Achannel.bits := req_reg
   // only when state is idle,could let more req in!
   io.iread_req.ready := (state === s_idle)
 
@@ -72,7 +72,7 @@ class CacheFSM()(implicit p: Parameters) extends Module {
       when(state === s_idle && !resp.fire) {
         state := s_send_down
       }
-      when(state === s_send_down && io.req_to_achannel.fire) {
+      when(state === s_send_down && io.req_to_Achannel.fire) {
         state := s_wating
       }
       when(state === s_wating && resp.fire) {
@@ -82,10 +82,13 @@ class CacheFSM()(implicit p: Parameters) extends Module {
 
   }
 
-  io.req_to_achannel.valid := state === s_send_down
+  io.req_to_Achannel.valid := state === s_send_down
 
   dontTouch(meta_hit)
   dontTouch(tag_hit)
 
-  io.resp_from_achannel <> io.data_to_frontend
+  io.data_to_frontend.bits.req := req_reg
+  io.data_to_frontend.bits.resp.data := io.resp_from_Achannel.bits.data(31,0)
+  io.data_to_frontend.valid := io.req_to_Achannel.valid
+  io.resp_from_Achannel.ready := io.data_to_frontend.ready
 }

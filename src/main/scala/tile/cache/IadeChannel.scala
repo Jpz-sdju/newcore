@@ -15,18 +15,18 @@ import freechips.rocketchip.diplomaticobjectmodel.model.U
 
 class iadeChannel(edge: TLEdgeOut) extends Module with Setting {
   val io = IO(new Bundle {
-    val iread_req = Flipped(Decoupled(new ReadReq))
-    val iread_resp = (DecoupledIO(new ReadRespWithReqInfo))
+    val i_acquire_req = Flipped(Decoupled(new ReadReq))
+    val i_acquire_resp = Decoupled(new ReadRespFromDown)
     val sourceA = DecoupledIO(new TLBundleA(edge.bundle))
     val sinkD = Flipped(DecoupledIO(new TLBundleD(edge.bundle)))
     val sourceE = DecoupledIO(new TLBundleE(edge.bundle))
   })
-  val req = io.iread_req.bits
+  val req = io.i_acquire_req.bits
   val req_valid = RegInit(false.B)
   val req_reg = Reg(new ReadReq)
 
   // register this req
-  when(io.iread_req.valid) {
+  when(io.i_acquire_req.valid) {
     req_reg := req
     req_valid := true.B
   }
@@ -52,37 +52,28 @@ class iadeChannel(edge: TLEdgeOut) extends Module with Setting {
   }
   io.sourceA.bits := acqu
   io.sourceA.valid := req_valid && !is_issued
-  io.iread_req.ready := io.sourceA.ready
+  io.i_acquire_req.ready := io.sourceA.ready
 
   // grant ack sig
   val haveAcked = RegInit(false.B)
-  when(io.iread_resp.fire) {
+  when(io.i_acquire_resp.fire) {
     haveAcked := true.B
   }
 
   val (grant_first, _, grant_done, grant_count) = edge.count(io.sinkD)
   io.sourceE.bits := grantAck
-  io.sourceE.valid := io.iread_resp.fire && grant_first
+  io.sourceE.valid := io.i_acquire_resp.fire && grant_first
 
   // When resp is fire,could accept next req
-  when(io.iread_resp.fire) {
+  when(io.i_acquire_resp.fire) {
     req_valid := false.B
     is_issued := false.B
     req_reg := (0.U).asTypeOf(new ReadReq)
   }
 
-  // With 32bits fetch size,WE MUST Select data!
-
-  val out_data = Mux(
-    req_reg.addr(2),
-    io.sinkD.bits.data(XLEN - 1, 32),
-    io.sinkD.bits.data(31, 0)
-  )
   // icache out to frontend
   io.sinkD.ready := true.B
-  io.iread_resp.bits.req.addr := req_reg.addr
-  io.iread_resp.bits.req.size := req_reg.size
-  io.iread_resp.bits.resp.data := out_data
-  io.iread_resp.valid := io.sinkD.valid
+  io.i_acquire_resp.bits.data := io.sinkD.bits.data
+  io.i_acquire_resp.valid := io.sinkD.valid
 
 }

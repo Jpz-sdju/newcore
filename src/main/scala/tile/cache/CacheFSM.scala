@@ -112,8 +112,12 @@ class CacheFSM()(implicit p: Parameters) extends Module {
 
   //need to reg first grant
   val first_grant_data = RegEnable(io.resp_from_Achannel.bits.data(31, 0), resp.valid && first)
+  //read word idx,compiatble for now newcore
+  val word_idx = req_reg.addr(2)
+  val muxWord = Mux(word_idx, array_resp.bits.data(0)(63,32), array_resp.bits.data(0)(31,0))
+
   io.data_to_frontend.bits.req := req_reg
-  io.data_to_frontend.bits.resp.data := Mux(miss,first_grant_data, array_resp.bits.data(0))
+  io.data_to_frontend.bits.resp.data := Mux(miss,first_grant_data, muxWord)
   io.data_to_frontend.valid := Mux(miss, resp.valid && done, array_resp_valid)
   io.resp_from_Achannel.ready := io.data_to_frontend.ready
 }

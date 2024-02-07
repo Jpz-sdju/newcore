@@ -36,28 +36,27 @@ class IcacheArray() extends Module with Setting {
   // 0-6 offset,6 idx,20tag
   val bank_idx = io.iread_req.bits.addr(5, 3)
   val set_idx = io.iread_req.bits.addr(11, 6)
-  val read_tag = Wire(Vec(4, UInt(20.W)))
-  val read_data = WireInit(VecInit(Seq.fill(ways)(0.U(64.W))))
-  val read_meta = Wire(Vec(4, UInt(2.W)))
+  val read_tag = Reg(Vec(4, UInt(20.W)))
+  val read_data = RegInit(VecInit(Seq.fill(ways)(0.U(64.W))))
+  val read_meta = Reg(Vec(4, UInt(2.W)))
 
   for (id <- 0 until 8) {
-    val cond = id.U === bank_idx
+    val cond = (id.U === bank_idx) && req.valid
     when(cond) {
       read_data := dataArray(id).read(set_idx, cond.asBool)
     }
   }
   read_tag := tagArray.read(set_idx)
   read_meta := metaArray.read(set_idx)
-
+  dontTouch(read_data)
   // assign 4 ways RESULT to outer
   resp.bits.data := read_data
   resp.bits.tag := read_tag
   resp.bits.meta := read_meta
   resp.valid := RegNext(req.valid)
 
-
   req.ready := true.B
-  /* 
+  /*
     WRITE REGION
    */
   val write_req = io.array_write_req
@@ -65,29 +64,39 @@ class IcacheArray() extends Module with Setting {
   val waymask_onehot = write_req.bits.way_mask
   val waymask_uint = PriorityEncoder(waymask_onehot)
 
-  //ugly code below,refact later
-  val bank_write_data = WireInit(VecInit(Seq.fill(8)(0.U(64.W))))
-  val write_4ways_data = WireInit(VecInit(Seq.fill(ways)(0.U(64.W))))
-  for (bank <- 0 until 8){
-    bank_write_data(bank.U) :=  write_req.bits.data(((bank+1)*64 -1)%256 ,(bank * 64) % 256)
-    write_4ways_data(waymask_uint) := bank_write_data(bank)
+  // ugly code below,refact later
+  val bank_write_data = WireInit(VecInit(Seq.fill(banks)(0.U(64.W))))
+  val write_4ways_data = WireInit(
+    VecInit(
+      Seq.fill(banks)(VecInit(
+        Seq.fill(ways)(0.U(64.W))
+      ))
+    )
+  )
+  for (bank <- 0 until 8) {
+    bank_write_data(bank.U) := 
+      write_req.bits.data(((bank + 1) * 64 - 1) % 256,(bank * 64) % 256)
+    write_4ways_data(bank)(waymask_uint) := bank_write_data(bank)
   }
   for (id <- 0 until 8) {
     val cond = bankmask(id.U) && write_req.valid
     when(cond) {
-      dataArray(id).write(set_idx, write_4ways_data , waymask_onehot)
+      dataArray(id).write(set_idx, write_4ways_data(id), waymask_onehot)
     }
   }
+
   val write_4ways_tag = WireInit(VecInit(Seq.fill(ways)(0.U(20.W))))
   write_4ways_tag(waymask_uint) := write_req.bits.tag
   val write_4ways_meta = WireInit(VecInit(Seq.fill(ways)(0.U(20.W))))
   write_4ways_meta(waymask_uint) := write_req.bits.meta
+  dontTouch(write_4ways_data)
+  dontTouch(write_4ways_tag)
+  dontTouch(write_4ways_meta)
 
-  when(write_req.valid){
+  when(write_req.valid) {
     tagArray.write(set_idx, write_4ways_tag, waymask_onehot)
     metaArray.write(set_idx, write_4ways_meta, waymask_onehot)
   }
-
 
   io.array_write_req.ready := true.B
 }

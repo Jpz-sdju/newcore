@@ -36,8 +36,8 @@ class Decoder()(implicit p: Parameters) extends Module  {
   out.cf := decode_unit_out
   out.isAlu := FuType.isAluExu(fuType)
   out.isBranch := FuType.isAluExu(fuType) && ALUOpType.isBranch(fuOpType)
-  out.isJmp := JumpOpType.jumpOpisJ(fuOpType)
-  out.isAuipc := JumpOpType.jumpOpisAuipc(fuOpType) && FuType.isJumpExu(fuType)
+  out.isJmp := FuType.isJumpExu(fuType) &&JumpOpType.jumpOpisJ(fuOpType)
+  out.isAuipc := FuType.isJumpExu(fuType) && JumpOpType.jumpOpisAuipc(fuOpType) 
   out.isLoad := FuType.isLoadStore(fuType) && !FuType.isStoreExu(fuType)
   out.isStore := FuType.isLoadStore(fuType) && FuType.isStoreExu(fuType)
   out.rs1 := decode_unit_out.ctrl.lsrc(0)

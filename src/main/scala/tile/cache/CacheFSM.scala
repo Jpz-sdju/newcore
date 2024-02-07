@@ -28,12 +28,14 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   })
 
   val req = io.iread_req
-  val req_reg = RegNext(req.bits)
-  val req_valid = RegNext(req.valid)
+  val req_reg = RegEnable(req.bits, req.fire)
+  val req_valid = RegEnable(req.valid, req.fire)
+
+  val resp = io.resp_from_achannel
 
   val (s_idle :: s_checking
-    :: s_send_down :: s_refilling :: Nil) =
-    Enum(4)
+    :: s_send_down :: s_wating :: s_refilling :: Nil) =
+    Enum(5)
   val state = RegInit(s_idle)
 
   // assign array to first read,from frontend
@@ -59,14 +61,29 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   )
 
   io.req_to_achannel.bits := req_reg
-  //only when state is idle,could let more req in!
+  // only when state is idle,could let more req in!
   io.iread_req.ready := (state === s_idle)
-  when(req_valid && !(res_hit.asUInt.orR)) {
-    io.req_to_achannel.valid := true.B
-    state := s_send_down
-  }.otherwise {
-    io.req_to_achannel.valid := false.B
+
+  // when suocun de valid
+
+  when(req_valid ) {
+    // when reg_valid,if miss
+    when(!(res_hit.asUInt.orR) ) {
+      when(state === s_idle && !resp.fire) {
+        state := s_send_down
+      }
+      when(state === s_send_down && io.req_to_achannel.fire) {
+        state := s_wating
+      }
+      when(state === s_wating && resp.fire) {
+        state := s_idle
+      }
+    }
+
   }
+
+  io.req_to_achannel.valid := state === s_send_down
+
   dontTouch(meta_hit)
   dontTouch(tag_hit)
 

@@ -30,7 +30,14 @@ class IFU()(implicit p: Parameters) extends Module with Setting{
     pc := pc +4.U
   }
 
-  read.valid := true.B
+  val fetch_on_flight = RegInit(false.B)
+  when(read.fire){
+    fetch_on_flight := true.B
+  }.elsewhen(io.read_fin){
+    fetch_on_flight := false.B
+  }
+
+  read.valid :=  !reset.asBool && !fetch_on_flight
   read.bits.addr := pc
   read.bits.size := 4.U
 

@@ -33,8 +33,8 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   alu.io.in.valid := in.isAlu 
   //assign redirect
   val redirect = Wire(DecoupledIO(UInt(XLEN.W)))
-  val jal = in.cf.ctrl.fuOpType === JumpOpType.jal
-  val jalr = in.cf.ctrl.fuOpType === JumpOpType.jalr
+  val jal = in.isJmp && in.cf.ctrl.fuOpType === JumpOpType.jal
+  val jalr = in.isJmp && in.cf.ctrl.fuOpType === JumpOpType.jalr
   val pc_with_offset = pc + in.Imm
   val jmp_target = Mux(jal, pc_with_offset, in.Src1 + in.Imm )
   redirect.bits := Mux(in.isBranch, pc_with_offset, jmp_target )

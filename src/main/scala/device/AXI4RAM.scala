@@ -68,7 +68,7 @@ class AXI4RAM
 
     val wIdx = index(waddr) + writeBeatCnt
     val rIdx = index(raddr) + readBeatCnt
-    val wen = in.w.fire() && inRange(wIdx)
+    val wen = in.w.fire && inRange(wIdx)
     require(beatBytes >= 8)
 
     //println("split:%d log2Up(split): %d\n", split, log2Up(split))

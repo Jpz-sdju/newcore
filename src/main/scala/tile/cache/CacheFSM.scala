@@ -59,13 +59,16 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   val data = array_resp.bits.data
   val tag = array_resp.bits.tag
 
+  //info valid MUST AT array read resp valid!!
+  val array_resp_valid = array_resp.valid
   val meta_hit = VecInit(meta.map(_ === "b11".U))
   val tag_hit = VecInit(tag.map(_ === req_reg.addr(31, 12)))
   val res_hit = VecInit(
     (meta_hit.zip(tag_hit).map { case (a, b) => (a && b).asBool })
   )
-  val miss = !res_hit.asUInt.orR
 
+  val miss = !res_hit.asUInt.orR && req_valid && !RegNext(done) || (state === s_refilling)
+  dontTouch(miss)
   
   
   // when suocun de valid
@@ -104,10 +107,13 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   array_write.bits.data := io.resp_from_Achannel.bits.data
   array_write.bits.tag := req_reg.addr(31,12)
   array_write.bits.meta := "b11".U
-  array_write.valid := first || done
+  array_write.valid := (first || done) && resp.valid
+  dontTouch(array_write)
 
+  //need to reg first grant
+  val first_grant_data = RegEnable(io.resp_from_Achannel.bits.data(31, 0), resp.valid && first)
   io.data_to_frontend.bits.req := req_reg
-  io.data_to_frontend.bits.resp.data := io.resp_from_Achannel.bits.data(31, 0)
-  io.data_to_frontend.valid := io.req_to_Achannel.valid
+  io.data_to_frontend.bits.resp.data := Mux(miss,first_grant_data, array_resp.bits.data(0))
+  io.data_to_frontend.valid := Mux(miss, resp.valid && done, array_resp_valid)
   io.resp_from_Achannel.ready := io.data_to_frontend.ready
 }

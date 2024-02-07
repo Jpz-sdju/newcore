@@ -89,6 +89,5 @@ class IcacheArray() extends Module with Setting {
   }
 
 
-  io.array_read_resp <> DontCare
-  io.array_write_req <> DontCare
+  io.array_write_req.ready := true.B
 }

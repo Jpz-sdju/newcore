@@ -39,14 +39,14 @@ class IcacheArray() extends Module with Setting {
   val read_tag = Wire(Vec(4, UInt(20.W)))
   val read_meta = Wire(Vec(4, UInt(2.W)))
 
-  val re1 = dataArray(0).read(set_idx,bank_idx === 0.U)
-  val re2 = dataArray(1).read(set_idx,bank_idx === 1.U)
-  val re3 = dataArray(2).read(set_idx,bank_idx === 2.U)
-  val re4 = dataArray(3).read(set_idx,bank_idx === 3.U)
-  val re5 = dataArray(4).read(set_idx,bank_idx === 4.U)
-  val re6 = dataArray(5).read(set_idx,bank_idx === 5.U)
-  val re7 = dataArray(6).read(set_idx,bank_idx === 6.U)
-  val re8 = dataArray(7).read(set_idx,bank_idx === 7.U)
+  val re1 = dataArray(0).read(set_idx,bank_idx === 0.U  && req.valid)
+  val re2 = dataArray(1).read(set_idx,bank_idx === 1.U  && req.valid)
+  val re3 = dataArray(2).read(set_idx,bank_idx === 2.U  && req.valid)
+  val re4 = dataArray(3).read(set_idx,bank_idx === 3.U  && req.valid)
+  val re5 = dataArray(4).read(set_idx,bank_idx === 4.U  && req.valid)
+  val re6 = dataArray(5).read(set_idx,bank_idx === 5.U  && req.valid)
+  val re7 = dataArray(6).read(set_idx,bank_idx === 6.U  && req.valid)
+  val re8 = dataArray(7).read(set_idx,bank_idx === 7.U  && req.valid)
 
   val seqq = VecInit(re1,re2,re3,re4,re5,re6,re7,re8)
   read_tag := tagArray.read(set_idx)
@@ -54,7 +54,7 @@ class IcacheArray() extends Module with Setting {
   dontTouch(bank_idx)
   dontTouch(set_idx)
   // assign 4 ways RESULT to outer
-  resp.bits.data := seqq(bank_idx)
+  resp.bits.data := seqq(RegNext(bank_idx))
   resp.bits.tag := read_tag
   resp.bits.meta := read_meta
   resp.valid := RegNext(req.valid)

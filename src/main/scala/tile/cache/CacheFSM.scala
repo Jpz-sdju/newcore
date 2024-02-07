@@ -12,7 +12,6 @@ import device._
 import top.Setting
 import dataclass.data
 import freechips.rocketchip.diplomaticobjectmodel.model.U
-import os.stat
 
 class CacheFSM()(implicit p: Parameters) extends Module {
   val io = IO(new Bundle {
@@ -22,6 +21,9 @@ class CacheFSM()(implicit p: Parameters) extends Module {
 
     // data from downward refill
     val resp_from_Achannel = Flipped(DecoupledIO(new ReadRespFromDown))
+    // Essential Info
+    val resp_grant_first = Input(Bool())
+    val resp_grant_done = Input(Bool())
 
     // data to frontedn
     val data_to_frontend = (DecoupledIO(new ReadRespWithReqInfo))
@@ -31,7 +33,10 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   val req_reg = RegEnable(req.bits, req.fire)
   val req_valid = RegEnable(req.valid, req.fire)
 
+  //A channel Resp Ino
   val resp = io.resp_from_Achannel
+  val first = io.resp_grant_first
+  val done = io.resp_grant_done
 
   val (s_idle :: s_checking
     :: s_send_down :: s_wating :: s_refilling :: Nil) =
@@ -66,9 +71,9 @@ class CacheFSM()(implicit p: Parameters) extends Module {
 
   // when suocun de valid
 
-  when(req_valid ) {
+  when(req_valid) {
     // when reg_valid,if miss
-    when(!(res_hit.asUInt.orR) ) {
+    when(!(res_hit.asUInt.orR)) {
       when(state === s_idle && !resp.fire) {
         state := s_send_down
       }
@@ -88,7 +93,7 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   dontTouch(tag_hit)
 
   io.data_to_frontend.bits.req := req_reg
-  io.data_to_frontend.bits.resp.data := io.resp_from_Achannel.bits.data(31,0)
+  io.data_to_frontend.bits.resp.data := io.resp_from_Achannel.bits.data(31, 0)
   io.data_to_frontend.valid := io.req_to_Achannel.valid
   io.resp_from_Achannel.ready := io.data_to_frontend.ready
 }

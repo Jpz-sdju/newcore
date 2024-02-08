@@ -47,7 +47,7 @@ class Decoder()(implicit p: Parameters) extends Module  {
   
   out.Src1 := 0.U //init houmian
   out.Src2 := 0.U //init houmian
-  out.StoreData := 0.U //rs2
+  out.storeData := 0.U //rs2
   out.lsAddr := 0.U //rs1 + offset
   out.WRITE_BACK := 0.U //could assign at ex, or lsu
  

@@ -6,6 +6,13 @@ import chisel3.util._
 import freechips.rocketchip.config._
 import top.Setting
 
+class CacheReq extends Bundle with Setting {
+  val cmd = Bool() //0 is read, 1 is wirte
+  val addr = UInt(PAddrBits.W)
+  val wdata = UInt(XLEN.W)
+  val wsize = UInt(4.W)
+  // val wmask = UInt(8.W)
+}
 class ReadReq extends Bundle with Setting {
   val addr = UInt(PAddrBits.W)
   val size = UInt(4.W)

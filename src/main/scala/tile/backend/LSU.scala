@@ -15,8 +15,10 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new PipelineBundle))
 
-    val read_req = Decoupled(new ReadReq)
+    val d_req = Decoupled(new CacheReq)
     val read_resp = Flipped(Decoupled(new ReadResp))
+
+    
   })
     io.in.ready := true.B
     io.read_resp.ready := true.B
@@ -28,9 +30,11 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
     val ori = Seq("b00".U, "b01".U,"b10".U,"b11".U).zip(Seq("b0000".U,"b0010".U,"b0100".U,"b1000".U))
     val size = LookupTree(in.lsSize,ori)
 
-    io.read_req.valid := need_op
-    io.read_req.bits.addr := in.lsAddr
-    io.read_req.bits.size := size
+    io.d_req.valid := need_op
+    io.d_req.bits.cmd := store//1 is write,0 is read
+    io.d_req.bits.addr := in.lsAddr
+    io.d_req.bits.wdata := in.storeData
+    io.d_req.bits.wsize := size
 
 
 

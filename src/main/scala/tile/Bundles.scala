@@ -82,7 +82,7 @@ class PipelineBundle(implicit p: Parameters) extends Bundle with Setting{
   val Imm = UInt(XLEN.W)
 
 
-  val StoreData = UInt(XLEN.W)
+  val storeData = UInt(XLEN.W)
   
   val lsAddr = UInt(XLEN.W)
   val lsSize = UInt(2.W)

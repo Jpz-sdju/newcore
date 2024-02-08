@@ -60,7 +60,7 @@ class Frontend()(implicit p: Parameters) extends Module with Setting{
   out_wire.bits := decoder_out.bits //3 signals init
   out_wire.bits.Src1 := src1
   out_wire.bits.Src2 := src2
-  out_wire.bits.StoreData := src2
+  out_wire.bits.storeData := src2
   // out_wire.bits.lsAddr := // init AFTER!!
 
   out_wire.valid := decoder_out.valid

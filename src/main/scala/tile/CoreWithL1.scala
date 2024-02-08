@@ -14,6 +14,7 @@ import tile._
 import frontend._
 import backend._
 import cache._
+import cache.dcache._
 object ColorPrint extends App {
   // ANSI 转义码定义颜色和样式
   val RESET = "\u001B[0m"
@@ -115,7 +116,7 @@ class CoreWithL1Imp(outer: CoreWithL1) extends LazyModuleImp(outer) {
   icache.io.read_req <> frontend.io.iread_req
   icache.io.read_resp <> frontend.io.iread_resp
 
-  dcache.io.read_req <> backend.io.read_req
+  dcache.io.req_from_lsu <> backend.io.d_req
   dcache.io.read_resp <> backend.io.read_resp
 
 

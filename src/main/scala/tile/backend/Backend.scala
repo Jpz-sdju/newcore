@@ -16,7 +16,7 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
 
     val redirect = (DecoupledIO(UInt(XLEN.W)))
 
-    val read_req = Decoupled(new ReadReq)
+    val d_req = Decoupled(new CacheReq)
     val read_resp = Flipped(Decoupled(new ReadResp))
   })
   val in = io.in.bits
@@ -60,7 +60,7 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   PipelineConnect(exu_out, mem_in, mem_in.fire,false.B)
   val lsu = Module(new LSU)
   lsu.io.in <> mem_in
-  lsu.io.read_req <> io.read_req
+  lsu.io.d_req <> io.d_req
   lsu.io.read_resp <> io.read_resp
 
 

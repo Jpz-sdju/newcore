@@ -75,7 +75,7 @@ class CacheFSM()(implicit p: Parameters) extends Module {
   when(req_valid) {
     // when reg_valid,if miss
     when(miss) {
-      when(state === s_idle && !resp.fire) {
+      when(state === s_idle ) {
         state := s_send_down
       }
       when(state === s_send_down && io.req_to_Achannel.fire) {

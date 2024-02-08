@@ -31,14 +31,13 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   })
 
   // LSU req Info
-  val req = io.req_from_lsu
-  val req_is_write = req.bits.cmd 
-  val req_write_data = req.bits.wdata
-  val req_write_size = req.bits.wsize
-
+  val req = io.req_from_lsu  
+  //reg this req
   val req_reg = RegEnable(req.bits, req.fire)
   val req_valid = RegEnable(req.valid, req.fire)
-
+  val req_is_write = req_reg.cmd 
+  val req_write_data = req_reg.wdata
+  val req_write_size = req_reg.wsize
 
   //A channel Resp Info
   val resp = io.resp_from_Achannel
@@ -60,8 +59,8 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   val array_resp = array.io.array_read_resp
   array_resp.ready := true.B
 
-  val meta = array_resp.bits.meta
   val data = array_resp.bits.data
+  val meta = array_resp.bits.meta
   val tag = array_resp.bits.tag
 
   //info valid MUST AT array read resp valid!!
@@ -72,15 +71,14 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
     (meta_hit.zip(tag_hit).map { case (a, b) => (a && b).asBool })
   )
 
-  val miss = !res_hit.asUInt.orR && req_valid && !RegNext(done) || (state === s_refilling)
+  val miss = !res_hit.asUInt.orR && (req_valid && array_resp_valid) && !RegNext(done) || (state === s_refilling)
   dontTouch(miss)
-  
   
   // when suocun de valid
   when(req_valid) {
     // when reg_valid,if miss
     when(miss) {
-      when(state === s_idle && !resp.fire) {
+      when(state === s_idle ) {
         state := s_send_down
       }
       when(state === s_send_down && io.req_to_Achannel.fire) {
@@ -99,7 +97,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   // only when state is idle,could let more req in!
   io.req_from_lsu.ready := (state === s_idle)
 
-  //NOTE!:must clean low 6bits,clear in iadeChannel.scala
+  //NOTE!:must clean low 6bits,clear in DadeChannel.scala
   val this_is_first_grant = !req_reg.addr(5)
   val this_word = req_reg.addr(4,2)
   io.req_to_Achannel.bits.addr := req_reg.addr

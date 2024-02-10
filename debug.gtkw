@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Feb  7 21:55:17 2024
+[*] Sat Feb 10 21:33:15 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Wed Feb  7 21:23:17 2024"
-[dumpfile_size] 4056550
+[dumpfile_mtime] "Sat Feb 10 21:32:05 2024"
+[dumpfile_size] 8518146
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 81
-[size] 1663 871
-[pos] -3 31
-*-2.723291 90 90 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 52
+[size] 1551 903
+[pos] -1 -1
+*-4.723291 67 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Top.
 [treeopen] TOP.Top.core.
@@ -17,58 +17,28 @@
 [treeopen] TOP.Top.core.l_core.backend.
 [treeopen] TOP.Top.core.l_core.cork.
 [treeopen] TOP.Top.core.l_core.cork_1.
+[treeopen] TOP.Top.core.l_core.dcache.
 [treeopen] TOP.Top.core.l_core.frontend.
-[treeopen] TOP.Top.core.l_core.icache.
 [treeopen] TOP.Top.core.l_core.icache.fsm.
 [sst_width] 392
 [signals_width] 511
 [sst_expanded] 1
-[sst_vpaned_height] 501
+[sst_vpaned_height] 526
 @22
 TOP.Top.core.l_core.frontend.ifu.pc[31:0]
 TOP.Top.core.l_core.frontend.ifu.pc[31:0]
 @200
 -
 -
--
 @22
-TOP.Top.core.l_core.backend.exu_out_bits_cf_cf_pc[38:0]
-TOP.Top.core.l_core.backend.exu_out_bits_cf_cf_instr[31:0]
-@200
--
+TOP.Top.core.l_core.dcache.fsm.req_reg_addr[31:0]
 @28
-TOP.Top.core.l_core.icache.fsm.io_iread_req_valid
+TOP.Top.core.l_core.dcache.fsm.need_write_merge
 @22
-TOP.Top.core.l_core.icache.fsm.io_iread_req_bits_addr[31:0]
-@200
--
-@28
-TOP.Top.core.l_core.icache.fsm.miss
-@200
--
--
-@22
-TOP.Top.core.l_core.icache.fsm.array.set_idx[5:0]
-@28
-TOP.Top.core.l_core.icache.fsm.array.bank_idx[2:0]
-@200
--
-@201
--
-@28
-TOP.Top.core.l_core.icache.fsm.array.io_array_write_req_valid
+TOP.Top.core.l_core.dcache.fsm.req_reg_wdata[63:0]
 @200
 -
 @22
-TOP.Top.core.l_core.icache.fsm.array.seqq_0_0[63:0]
-TOP.Top.core.l_core.icache.fsm.array.seqq_1_0[63:0]
-TOP.Top.core.l_core.icache.fsm.array.seqq_2_0[63:0]
-TOP.Top.core.l_core.icache.fsm.array.seqq_3_0[63:0]
-TOP.Top.core.l_core.icache.fsm.array.seqq_4_0[63:0]
-TOP.Top.core.l_core.icache.fsm.array.seqq_5_0[63:0]
-TOP.Top.core.l_core.icache.fsm.array.seqq_6_0[63:0]
-TOP.Top.core.l_core.icache.fsm.array.seqq_7_0[63:0]
-@28
-TOP.Top.core.l_core.icache.fsm.array.io_iread_req_valid
+TOP.Top.core.l_core.dcache.fsm.io_req_from_lsu_bits_wdata[63:0]
 [pattern_trace] 1
 [pattern_trace] 0

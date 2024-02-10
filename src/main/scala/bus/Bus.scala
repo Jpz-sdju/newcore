@@ -11,7 +11,7 @@ class CacheReq extends Bundle with Setting {
   val addr = UInt(PAddrBits.W)
   val wdata = UInt(XLEN.W)
   val wsize = UInt(4.W)
-  // val wmask = UInt(8.W)
+  val wmask = UInt(8.W)
 }
 class ReadReq extends Bundle with Setting {
   val addr = UInt(PAddrBits.W)

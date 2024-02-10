@@ -100,6 +100,9 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   //NOTE!:must clean low 6bits,clear in DadeChannel.scala
   val this_is_first_grant = !req_reg.addr(5)
   val this_word = req_reg.addr(4,2)
+  /* 
+    REQ to A channel 
+   */
   io.req_to_Achannel.bits.addr := req_reg.addr
   io.req_to_Achannel.bits.size := DontCare
   io.req_to_Achannel.valid := state === s_send_down
@@ -109,12 +112,22 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
     ARRAY WRITE REGION  
    */
   val array_write = array.io.array_write_req
+  //write is at: 1.req is read, miss,refill 2,req is write ,miss, merge refill. 3, req is write hit,merge refill
+  val need_refill = (first || done) && resp.valid
+  val need_write_merge = miss && req_is_write && (this_is_first_grant && first || !this_is_first_grant && done)
+  val write_valid = Mux(miss, need_refill, req_is_write )
+
+  val merge_data = MaskData(SelectDword(resp.bits.data, req_reg.addr(4,3)),req_reg.wdata, req_reg.wmask)
+  val write_data = Mux(need_write_merge, merge_data, resp.bits.data)
+  dontTouch(need_write_merge)
+
   array_write.bits.bank_mask := Mux(first, "b00001111".U, "b11110000".U).asBools
   array_write.bits.way_mask := ("b0001".U(4.W)).asBools
-  array_write.bits.data := resp.bits.data
+  array_write.bits.data := write_data
   array_write.bits.tag := req_reg.addr(31,12)
   array_write.bits.meta := "b11".U
-  array_write.valid := (first || done) && resp.valid
+  
+  array_write.valid := write_valid
   dontTouch(array_write)
 
   //read word idx,compiatble for now newcore
@@ -128,7 +141,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   val sec_word = (resp.bits.data & Fill(256,done) ) >> (this_word << 5)
   val word = Mux(this_is_first_grant,first_word,sec_word)
 
-
+  //temp use data to lsu.valid as store instr compelete sig
   io.data_to_lsu.bits.data := Mux(miss, word, muxWord)
   io.data_to_lsu.valid := Mux(miss, resp.valid && done, array_resp_valid)
   io.resp_from_Achannel.ready := io.data_to_lsu.ready

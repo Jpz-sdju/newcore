@@ -32,7 +32,11 @@ object MaskData {
    (newData & fullmask) | (oldData & ~fullmask)
  }
 }
-
+object SelectDword {
+  def apply(ori: UInt, num: UInt) = {
+    ori >> (num << 6)
+  }
+}
 object SignExt {
   def apply(a: UInt, len: Int) = {
     val aLen = a.getWidth

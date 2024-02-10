@@ -12,6 +12,7 @@ import freechips.rocketchip.amba.axi4._
 import device._
 import top._
 import frontend.{XDecode, ImmUnion}
+import freechips.rocketchip.diplomaticobjectmodel.model.U
 
 class CtrlFlow(implicit p: Parameters) extends Bundle with Setting {
   val instr = UInt(32.W)
@@ -76,6 +77,7 @@ class PipelineBundle(implicit p: Parameters) extends Bundle with Setting{
 
   val rs1 = UInt(5.W)
   val rs2 = UInt(5.W)
+  val rd = UInt(5.W)
 
   val Src1 = UInt(XLEN.W)
   val Src2 = UInt(XLEN.W)
@@ -88,4 +90,9 @@ class PipelineBundle(implicit p: Parameters) extends Bundle with Setting{
   val lsSize = UInt(2.W)
 
   val WRITE_BACK = UInt(XLEN.W) //could assign at exu or lsu!!
+}
+
+class WBundle(implicit p: Parameters) extends Bundle with Setting{
+  val rd = UInt(5.W)
+  val data = UInt(64.W)
 }

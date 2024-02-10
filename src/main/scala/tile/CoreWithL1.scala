@@ -123,5 +123,7 @@ class CoreWithL1Imp(outer: CoreWithL1) extends LazyModuleImp(outer) {
   frontend.io.out <> backend.io.in
   frontend.io.redirect <> backend.io.redirect
 
+  frontend.io.wb <> backend.io.wb
+
   val memory = outer.memAXI4SlaveNode.makeIOs()
 }

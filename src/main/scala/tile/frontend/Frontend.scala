@@ -4,7 +4,7 @@ import bus._
 import freechips.rocketchip.config._
 import tile._
 import top.Setting
-class Frontend()(implicit p: Parameters) extends Module with Setting{
+class Frontend()(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
     val iread_req = Decoupled(new ReadReq)
     val iread_resp = Flipped(Decoupled(new ReadRespWithReqInfo))
@@ -13,6 +13,7 @@ class Frontend()(implicit p: Parameters) extends Module with Setting{
 
     val redirect = Flipped(DecoupledIO(UInt(XLEN.W)))
 
+    val wb = Flipped(Decoupled(new WBundle))
   })
 
   val ifu = Module(new IFU())
@@ -57,17 +58,24 @@ class Frontend()(implicit p: Parameters) extends Module with Setting{
   val src1 = Mux(SrcType.isReg(src_type(0)), reg_read_port(0).data, pc)
   val src2 = Mux(SrcType.isReg(src_type(1)), reg_read_port(1).data, imm)
 
-  out_wire.bits := decoder_out.bits //3 signals init
+  out_wire.bits := decoder_out.bits // 3 signals init
   out_wire.bits.Src1 := src1
   out_wire.bits.Src2 := src2
   out_wire.bits.storeData := src2
   // out_wire.bits.lsAddr := // init AFTER!!
 
   out_wire.valid := decoder_out.valid
-  
+
   decoder_out.ready := out_wire.ready
   PipelineConnect(out_wire, io.out, out_wire.valid && io.out.ready, false.B)
 
+  /* 
+  
+    WB REGION
+   */
 
-
+   reg_write_port(0).addr := io.wb.bits.rd
+   reg_write_port(0).data := io.wb.bits.data
+   reg_write_port(0).wen := io.wb.valid
+   io.wb.ready := true.B
 }

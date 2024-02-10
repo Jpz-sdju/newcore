@@ -42,6 +42,7 @@ class Decoder()(implicit p: Parameters) extends Module  {
   out.isStore := FuType.isLoadStore(fuType) && FuType.isStoreExu(fuType)
   out.rs1 := decode_unit_out.ctrl.lsrc(0)
   out.rs2 := decode_unit_out.ctrl.lsrc(1)
+  out.rd := decode_unit_out.ctrl.ldest
   out.Imm := decode_unit_out.ctrl.imm
   out.lsSize := LSUOpType.size(fuOpType)
   

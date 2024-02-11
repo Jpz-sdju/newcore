@@ -14,6 +14,9 @@ class Frontend()(implicit p: Parameters) extends Module with Setting {
     val redirect = Flipped(DecoupledIO(UInt(XLEN.W)))
 
     val wb = Flipped(Decoupled(new WBundle))
+
+    //debug port
+    val gpr = Output(Vec(32, UInt(64.W)))
   })
 
   val ifu = Module(new IFU())
@@ -67,7 +70,7 @@ class Frontend()(implicit p: Parameters) extends Module with Setting {
   out_wire.valid := decoder_out.valid
 
   decoder_out.ready := out_wire.ready
-  PipelineConnect(out_wire, io.out, out_wire.valid && io.out.ready, false.B)
+  PipelineConnect(out_wire, io.out, io.out.fire, false.B)
 
   /* 
   
@@ -78,4 +81,7 @@ class Frontend()(implicit p: Parameters) extends Module with Setting {
    reg_write_port(0).data := io.wb.bits.data
    reg_write_port(0).wen := io.wb.valid
    io.wb.ready := true.B
+
+   //debug
+   io.gpr <> regfile.io.debugPorts
 }

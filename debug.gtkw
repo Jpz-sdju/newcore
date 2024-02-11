@@ -1,44 +1,73 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Feb 10 21:33:15 2024
+[*] Sun Feb 11 06:30:56 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Sat Feb 10 21:32:05 2024"
-[dumpfile_size] 8518146
+[dumpfile_mtime] "Sun Feb 11 06:20:01 2024"
+[dumpfile_size] 372412
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 52
-[size] 1551 903
-[pos] -1 -1
-*-4.723291 67 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 0
+[size] 1675 895
+[pos] 133 634
+*-2.790405 17 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
-[treeopen] TOP.Top.
-[treeopen] TOP.Top.core.
-[treeopen] TOP.Top.core.l_core.
-[treeopen] TOP.Top.core.l_core.backend.
-[treeopen] TOP.Top.core.l_core.cork.
-[treeopen] TOP.Top.core.l_core.cork_1.
-[treeopen] TOP.Top.core.l_core.dcache.
-[treeopen] TOP.Top.core.l_core.frontend.
-[treeopen] TOP.Top.core.l_core.icache.fsm.
+[treeopen] TOP.SimTop.
+[treeopen] TOP.SimTop.core.
+[treeopen] TOP.SimTop.core.l_core.
+[treeopen] TOP.SimTop.core.l_core.backend.
+[treeopen] TOP.SimTop.core.l_core.frontend.
+[treeopen] TOP.SimTop.core.memory.
+[treeopen] TOP.SimTop.core.memory.ram.
 [sst_width] 392
-[signals_width] 511
+[signals_width] 492
 [sst_expanded] 1
-[sst_vpaned_height] 526
-@22
-TOP.Top.core.l_core.frontend.ifu.pc[31:0]
-TOP.Top.core.l_core.frontend.ifu.pc[31:0]
-@200
--
--
-@22
-TOP.Top.core.l_core.dcache.fsm.req_reg_addr[31:0]
+[sst_vpaned_height] 406
 @28
-TOP.Top.core.l_core.dcache.fsm.need_write_merge
+TOP.SimTop.core.l_core.backend.io_in_valid
 @22
-TOP.Top.core.l_core.dcache.fsm.req_reg_wdata[63:0]
+TOP.SimTop.core.l_core.backend.lsu_io_in_bits_cf_cf_pc[38:0]
+TOP.SimTop.core.l_core.backend.lsu_io_in_bits_cf_cf_instr[31:0]
+@200
+-
+@29
+TOP.SimTop.core.l_core.backend.dt_ic.io_valid
+@22
+TOP.SimTop.core.l_core.backend.dt_ic.io_pc[63:0]
 @200
 -
 @22
-TOP.Top.core.l_core.dcache.fsm.io_req_from_lsu_bits_wdata[63:0]
+TOP.SimTop.core.l_core.frontend.decoder.decode_unit_io_in_ctrl_flow_pc[38:0]
+TOP.SimTop.core.l_core.frontend.decoder.decode_unit_io_in_ctrl_flow_instr[31:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.frontend.io_iread_resp_valid
+@22
+TOP.SimTop.core.l_core.frontend.io_iread_resp_bits_resp_data[63:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.frontend.decoder.io_in_ctrl_flow_valid
+@22
+TOP.SimTop.core.l_core.frontend.decoder.io_in_ctrl_flow_bits_pc[38:0]
+TOP.SimTop.core.l_core.frontend.decoder.io_in_ctrl_flow_bits_instr[31:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.frontend.io_out_valid
+@22
+TOP.SimTop.core.l_core.frontend.io_out_bits_r_cf_cf_pc[38:0]
+TOP.SimTop.core.l_core.frontend.io_out_bits_r_cf_cf_instr[31:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.frontend.decoder.io_out_valid
+TOP.SimTop.core.l_core.frontend.decoder_io_out_valid
+TOP.SimTop.core.l_core.frontend.out_wire_valid
+@200
+-
+@28
+TOP.SimTop.core.l_core.frontend.io_out_valid
+TOP.SimTop.core.l_core.frontend.io_out_ready
 [pattern_trace] 1
 [pattern_trace] 0

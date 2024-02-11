@@ -17,19 +17,20 @@ V_FLAG = --cc --exe --build \
 
 
 
-verilog:
-	mill chiselModule.test.runMain Sim $(FIR_OPTS)
-
-sim-verilog: $(SCALA_FILE)
+$(BUILD_DIR)/SimTop.v: $(SCALA_FILE)
 	mill chiselModule.test.runMain Exp $(FIR_OPTS)
-#	$(V) $(V_FLAG) $(BUILD_DIR)/SimTop.v  $(CPP) $(OTHER_VSRC)
-#	cp $(BUILD_DIR)/obj_dir/VSimTop $(BUILD_DIR)/emu
-#	$(BUILD_DIR)/emu $(MAKEFILE_DIR)/ready2run/coremark-mt-riscv64-nutshell.bin
+
+sim-verilog: $(BUILD_DIR)/SimTop.v
+
+simple:
+	$(V) $(V_FLAG) $(BUILD_DIR)/SimTop.v  $(CPP) $(OTHER_VSRC)
+	cp $(BUILD_DIR)/obj_dir/VSimTop $(BUILD_DIR)/emu
+	$(BUILD_DIR)/emu $(MAKEFILE_DIR)/ready2run/coremark-mt-riscv64-nutshell.bin
 
 
 emu: sim-verilog
 	$(MAKE) -C ./difftest emu EMU_CXX_EXTRA_FLAGS="-DFIRST_INST_ADDRESS=0x80000000" EMU_TRACE=1 -j8
-	./build/emu --diff ready2run/riscv64-nemu-interpreter-so -i ./ready2run/coremark-mt-riscv64-nutshell.bin --dump-wave -b 0 
+	./build/emu --diff ready2run/riscv64-nemu-interpreter-so -i ./ready2run/add-riscv64-nutshell.bin --dump-wave -b 0 --wave-path=vcd.vcd
 
 help:
 	mill chiselModule.runMain Sim --help
@@ -48,3 +49,6 @@ gtk:
 
 ntk:
 	sudo gtkwave $(shell find ~/xs-env/NutShell/build/2*)
+
+dv:
+	rm -rf build/2*

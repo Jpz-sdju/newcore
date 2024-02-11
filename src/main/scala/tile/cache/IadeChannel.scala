@@ -66,8 +66,7 @@ class iadeChannel(edge: TLEdgeOut) extends Module with Setting {
     toSink = sinkD
   )
   io.sourceE.bits := grantAck
-  io.sourceE.valid := io.acquire_resp.fire && grant_first
-
+  io.sourceE.valid := io.acquire_resp.fire && grant_done
 
   // When resp is fire,could accept next req
   when(io.acquire_resp.fire) {

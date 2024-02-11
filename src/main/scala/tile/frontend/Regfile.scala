@@ -23,7 +23,7 @@ class Regfile extends Module {
   val io = IO(new Bundle() {
     val readPorts = Vec(4, new RfReadPort)
     val writePorts = Vec(2, new RfWritePort)
-    // val debugPorts = Output(Vec(32,UInt(64.W)))
+    val debugPorts = Output(Vec(32,UInt(64.W)))
     val mem = Output(Vec(32, UInt(63.W)))
   })
 
@@ -47,8 +47,8 @@ class Regfile extends Module {
   }.otherwise {
     mem(io.writePorts(1).addr) := io.writePorts(1).data
   }
-  // BoringUtils.addSource(mem(10), "rf_a0")
-  // for (i <- 0 to 31){
-  //   io.debugPorts(i) := Mux(i.U === 0.U, 0.U, mem(i.U))
-  // }
+
+  for (i <- 0 to 31){
+    io.debugPorts(i) := Mux(i.U === 0.U, 0.U, mem(i.U))
+  }
 }

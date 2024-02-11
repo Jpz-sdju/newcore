@@ -68,8 +68,8 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
    */
 
    io.out <> io.in
-   io.out.valid := io.read_resp.valid
-   io.out.bits.WRITE_BACK := io.read_resp.bits.data
+   io.out.valid := io.read_resp.valid && need_op || io.in.valid
+   io.out.bits.WRITE_BACK := Mux(need_op, io.read_resp.bits.data, io.in.bits.WRITE_BACK)
 
   dontTouch(io.in)
 }

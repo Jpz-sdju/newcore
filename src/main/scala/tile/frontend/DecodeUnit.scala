@@ -388,7 +388,7 @@ class DecodeUnit(implicit p: Parameters) extends Module with DecodeUnitConstants
 
 
   // read src1~3 location
-  cs.lsrc(0) := ctrl_flow.instr(RS1_MSB, RS1_LSB)
+  cs.lsrc(0) := Mux(FuType.isAluExu(cs.fuType) && cs.selImm === SelImm.IMM_U,0.U,ctrl_flow.instr(RS1_MSB, RS1_LSB))
   cs.lsrc(1) := ctrl_flow.instr(RS2_MSB, RS2_LSB)
   cs.lsrc(2) := ctrl_flow.instr(RS3_MSB, RS3_LSB)
   // read dest location

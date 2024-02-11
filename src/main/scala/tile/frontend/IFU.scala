@@ -32,10 +32,18 @@ class IFU()(implicit p: Parameters) extends Module with Setting {
   // }.elsewhen(io.read_fin){
   //   pc := pc +4.U
   // }
-  when(io.redirect.valid) {
-    pc := io.redirect.bits
-  }.elsewhen(io.next) {
-    pc := pc + 4.U
+  val hasRedi = RegInit(false.B)
+  when(reset.asBool){
+    npc := pc +4.U
+  }.elsewhen(io.redirect.valid || hasRedi){
+    npc := io.redirect.bits
+    hasRedi := true.B
+  }.otherwise{
+    npc := pc + 4.U
+  }
+  when(io.next){
+    pc := npc
+    hasRedi := false.B
   }
 
   val fetch_on_flight = RegInit(false.B)

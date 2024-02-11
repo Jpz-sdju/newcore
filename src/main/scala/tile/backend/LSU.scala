@@ -57,8 +57,7 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
   io.d_req.valid := need_op
   io.d_req.bits.cmd := store // 1 is write,0 is read
   io.d_req.bits.addr := in.lsAddr
-  // io.d_req.bits.wdata := genWdata(in.storeData, in.lsSize)
-  io.d_req.bits.wdata := 1.U
+  io.d_req.bits.wdata := genWdata(in.storeData, in.lsSize)
   io.d_req.bits.wsize := in.lsSize
   io.d_req.bits.wmask := genWmask(in.lsAddr, in.lsSize)
 

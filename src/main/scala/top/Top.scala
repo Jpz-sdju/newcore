@@ -56,11 +56,7 @@ class SimTop()(implicit p: Parameters) extends Module {
 
   io.uart.in.valid := false.B
 
-  val dt_te = Module(new DifftestTrapEvent)
-  val cycle_cnt = RegInit(0.U(64.W))
-  cycle_cnt := cycle_cnt + 1.U
-  dt_te.io.clock := clock
-  dt_te.io.cycleCnt := cycle_cnt
+
 }
 
 class HuanCunExp()(implicit p: Parameters) extends LazyModule {

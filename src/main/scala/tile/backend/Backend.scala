@@ -81,13 +81,15 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
 
   PipelineConnect(mem_out, wb_in, wb_in.fire, false.B)
 
-  io.wb.valid := wb_in.valid && wb_in.bits.cf.ctrl.rfWen
+  io.wb.valid := wb_in.valid 
   io.wb.bits.rd := wb_in.bits.rd
   io.wb.bits.data := wb_in.bits.WRITE_BACK
+  io.wb.bits.wen := wb_in.valid && wb_in.bits.cf.ctrl.rfWen
   wb_in.ready := io.wb.ready
 
   alu.io.out.ready := true.B
 
+  
   val dt_ic = Module(new DifftestInstrCommit)
   val dt_iw = Module(new DifftestIntWriteback)
   val dt_irs = Module(new DifftestArchIntRegState)
@@ -108,7 +110,7 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
 
   dt_iw.io.clock := clock
   dt_iw.io.coreid := 0.U
-  dt_iw.io.valid := RegNext(io.wb.valid)
+  dt_iw.io.valid := RegNext(io.wb.valid && io.wb.bits.wen)
   dt_iw.io.dest := RegNext(wb_in.bits.rd)
   dt_iw.io.data := RegNext(wb_in.bits.WRITE_BACK)
 

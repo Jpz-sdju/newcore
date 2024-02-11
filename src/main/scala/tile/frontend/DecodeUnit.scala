@@ -256,11 +256,14 @@ object XSTrapDecode extends DecodeConstants {
 abstract class Imm(val len: Int) extends Bundle {
   def toImm32(minBits: UInt): UInt = do_toImm32(minBits(len - 1, 0))
   def do_toImm32(minBits: UInt): UInt
+  def do_toImm64(minBits: UInt): UInt
   def minBitsFromInstr(instr: UInt): UInt
 }
 
 case class Imm_I() extends Imm(12) {
   override def do_toImm32(minBits: UInt): UInt = SignExt(minBits(len - 1, 0), 32)
+
+  override def do_toImm64(minBits: UInt): UInt = SignExt(minBits(len - 1, 0), 64)
 
   override def minBitsFromInstr(instr: UInt): UInt =
     Cat(instr(31, 20))
@@ -268,6 +271,7 @@ case class Imm_I() extends Imm(12) {
 
 case class Imm_S() extends Imm(12) {
   override def do_toImm32(minBits: UInt): UInt = SignExt(minBits, 32)
+  override def do_toImm64(minBits: UInt): UInt = SignExt(minBits, 64)
 
   override def minBitsFromInstr(instr: UInt): UInt =
     Cat(instr(31, 25), instr(11, 7))
@@ -275,6 +279,7 @@ case class Imm_S() extends Imm(12) {
 
 case class Imm_B() extends Imm(12) {
   override def do_toImm32(minBits: UInt): UInt = SignExt(Cat(minBits, 0.U(1.W)), 32)
+  override def do_toImm64(minBits: UInt): UInt = SignExt(Cat(minBits, 0.U(1.W)), 64)
 
   override def minBitsFromInstr(instr: UInt): UInt =
     Cat(instr(31), instr(7), instr(30, 25), instr(11, 8))
@@ -282,6 +287,7 @@ case class Imm_B() extends Imm(12) {
 
 case class Imm_U() extends Imm(20){
   override def do_toImm32(minBits: UInt): UInt = Cat(minBits(len - 1, 0), 0.U(12.W))
+  override def do_toImm64(minBits: UInt): UInt = Cat(minBits(len - 1, 0), 0.U(12.W))
 
   override def minBitsFromInstr(instr: UInt): UInt = {
     instr(31, 12)
@@ -290,6 +296,7 @@ case class Imm_U() extends Imm(20){
 
 case class Imm_J() extends Imm(20){
   override def do_toImm32(minBits: UInt): UInt = SignExt(Cat(minBits, 0.U(1.W)), 32)
+  override def do_toImm64(minBits: UInt): UInt = SignExt(Cat(minBits, 0.U(1.W)), 64)
 
   override def minBitsFromInstr(instr: UInt): UInt = {
     Cat(instr(31), instr(19, 12), instr(20), instr(30, 25), instr(24, 21))
@@ -298,7 +305,7 @@ case class Imm_J() extends Imm(20){
 
 case class Imm_Z() extends Imm(12 + 5){
   override def do_toImm32(minBits: UInt): UInt = minBits
-
+  override def do_toImm64(minBits: UInt): UInt = minBits
   override def minBitsFromInstr(instr: UInt): UInt = {
     Cat(instr(19, 15), instr(31, 20))
   }
@@ -306,6 +313,8 @@ case class Imm_Z() extends Imm(12 + 5){
 
 case class Imm_B6() extends Imm(6){
   override def do_toImm32(minBits: UInt): UInt = ZeroExt(minBits, 32)
+
+  override def do_toImm64(minBits: UInt): UInt = ZeroExt(minBits, 32)
 
   override def minBitsFromInstr(instr: UInt): UInt = {
     instr(25, 20)
@@ -397,7 +406,7 @@ class DecodeUnit(implicit p: Parameters) extends Module with DecodeUnitConstants
     x => {
       val minBits = x._2.minBitsFromInstr(ctrl_flow.instr)
       require(minBits.getWidth == x._2.len)
-      x._1 -> x._2.do_toImm32(minBits) //jpz add
+      x._1 -> x._2.do_toImm64(minBits) //jpz add
     }
   ))
 

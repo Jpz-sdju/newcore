@@ -39,6 +39,7 @@ class Frontend()(implicit p: Parameters) extends Module with Setting {
   // resp is valid,notify ifu to update pc
   ifu.io.redirect <> io.redirect
   ifu.io.read_fin := iread_resp.valid
+  ifu.io.next := io.wb.valid
   // reg file
   val regfile = Module(new Regfile())
   val reg_read_port = regfile.io.readPorts // 4
@@ -79,7 +80,7 @@ class Frontend()(implicit p: Parameters) extends Module with Setting {
 
    reg_write_port(0).addr := io.wb.bits.rd
    reg_write_port(0).data := io.wb.bits.data
-   reg_write_port(0).wen := io.wb.valid
+   reg_write_port(0).wen := io.wb.valid && io.wb.bits.wen
    io.wb.ready := true.B
 
    //debug

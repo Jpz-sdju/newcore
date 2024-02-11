@@ -33,7 +33,8 @@ class CtrlSignals(implicit p: Parameters) extends Bundle with Setting {
   val flushPipe =
     Bool() // This inst will flush all the pipe when commit, like exception but can commit
   val selImm = SelImm()
-  val imm = UInt(ImmUnion.maxLen.W)
+  // val imm = UInt(ImmUnion.maxLen.W)
+  val imm = UInt(64.W)
   val commitType = CommitType()
   private def allSignals = srcType ++ Seq(
     fuType,
@@ -95,4 +96,5 @@ class PipelineBundle(implicit p: Parameters) extends Bundle with Setting{
 class WBundle(implicit p: Parameters) extends Bundle with Setting{
   val rd = UInt(5.W)
   val data = UInt(64.W)
+  val wen = Bool()
 }

@@ -4,15 +4,15 @@ MAKEFILE_DIR := $(dir $(MAKEFILE_PATH))
 
 BUILD_DIR = build
 
-FIR_OPTS = -td $(BUILD_DIR) --output-file Top.v --full-stacktrace
-
+FIR_OPTS = -td $(BUILD_DIR) --output-file SimTop.v --full-stacktrace
+SCALA_FILE = $(shell find ./src/main/scala -name '*.scala')
 V = verilator
 CPP = $(abspath ./csrc/main.cpp)
 # OTHER_VSRC = $(shell find ./difftest/src/test/vsrc/common -name "*.v" -or -name "*.sv")
 OTHER_VSRC = ./difftest/src/test/vsrc/common/ram.v
 
 V_FLAG = --cc --exe --build \
---top-module Top \
+--top-module SimTop \
 -Mdir $(BUILD_DIR)/obj_dir  --trace \
 
 
@@ -20,11 +20,17 @@ V_FLAG = --cc --exe --build \
 verilog:
 	mill chiselModule.test.runMain Sim $(FIR_OPTS)
 
-test:
+sim-verilog: $(SCALA_FILE)
 	mill chiselModule.test.runMain Exp $(FIR_OPTS)
-	$(V) $(V_FLAG) $(BUILD_DIR)/Top.v  $(CPP) $(OTHER_VSRC)
-	cp $(BUILD_DIR)/obj_dir/VTop $(BUILD_DIR)/emu
-	$(BUILD_DIR)/emu $(MAKEFILE_DIR)/ready2run/coremark-mt-riscv64-nutshell.bin
+#	$(V) $(V_FLAG) $(BUILD_DIR)/SimTop.v  $(CPP) $(OTHER_VSRC)
+#	cp $(BUILD_DIR)/obj_dir/VSimTop $(BUILD_DIR)/emu
+#	$(BUILD_DIR)/emu $(MAKEFILE_DIR)/ready2run/coremark-mt-riscv64-nutshell.bin
+
+
+emu: sim-verilog
+	$(MAKE) -C ./difftest emu EMU_CXX_EXTRA_FLAGS="-DFIRST_INST_ADDRESS=0x80000000" EMU_TRACE=1 -j8
+	./build/emu --diff ready2run/riscv64-nemu-interpreter-so -i ./ready2run/coremark-mt-riscv64-nutshell.bin --dump-wave -b 0 
+
 help:
 	mill chiselModule.runMain Sim --help
 

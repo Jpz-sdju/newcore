@@ -53,7 +53,7 @@ object Exp extends App with HasRocketChipStageUtils {
   // implicit val p = Parameters.empty
   // p.alterPartial { case MonitorsEnabled => false }
   // Generator.execute(args, new Top()(p))
-  Generator.execute(args, DisableMonitors(p => new Top()(p))(Parameters.empty))
+  Generator.execute(args, DisableMonitors(p => new SimTop()(p))(Parameters.empty))
   println("======================Finish Chisel Compile!======================")
   println(" ")
   println(" ")

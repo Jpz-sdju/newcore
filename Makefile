@@ -52,3 +52,6 @@ ntk:
 
 dv:
 	rm -rf build/2*
+
+test:
+	mill -j 9 chiselModule.test.runMain Sim $(FIR_OPTS) 

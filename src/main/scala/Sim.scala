@@ -26,27 +26,8 @@ class test extends Module{
 object Sim extends App {
   implicit val p = Parameters.empty
   p.alterPartial { case MonitorsEnabled => false }
-  // Generator.execute(args, DisableMonitors(p => new Top()(p))(Parameters.empty))
-  val s = LazyModule(new simpleCase())
-  Generator.execute(args, s.module)
+  Generator.execute(args,new Top1())
 
-  // println(s.iun0.clientNode.edges.out.length)//1
-  println(s.iun0.clientNode.bindingInfo)//1
-  println(s.iun0.clientNode.parametersInfo)//1
-  println(s.iun0.clientNode.connectedPortsInfo)//1
-  println("===================================")
-  println(s.iun1.clientNode.bindingInfo)//1
-  println(s.iun1.clientNode.parametersInfo)//1
-  println(s.iun1.clientNode.connectedPortsInfo)//1
-  println("===================================")
-
-  println(s.timer.node.bindingInfo)
-  println(s.timer.node.parametersInfo)
-  println(s.timer.node.connectedPortsInfo)
-
-
-  println(s.xbar)
-  println(s.xbar.outer)
 }
 object Exp extends App with HasRocketChipStageUtils {
 

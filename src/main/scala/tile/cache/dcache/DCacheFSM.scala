@@ -14,7 +14,7 @@ import dataclass.data
 import freechips.rocketchip.diplomaticobjectmodel.model.U
 import os.stat
 
-class DCacheFSM()(implicit p: Parameters) extends Module {
+class DCacheFSM()(implicit p: Parameters) extends Module with Setting{
   val io = IO(new Bundle {
     val req_from_lsu = Flipped(Decoupled(new CacheReq))
     // if miss
@@ -35,6 +35,9 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   //reg this req
   val req_reg = RegEnable(req.bits, req.fire)
   val req_valid = RegEnable(req.valid, req.fire)
+  when(io.data_to_lsu.fire){
+    req_valid := false.B
+  }
   val req_is_write = req_reg.cmd 
   val req_write_data = req_reg.wdata
   val req_write_size = req_reg.wsize
@@ -99,7 +102,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
 
   //NOTE!:must clean low 6bits,clear in DadeChannel.scala
   val this_is_first_grant = !req_reg.addr(5)
-  val this_word = req_reg.addr(4,2)
+  val this_word = req_reg.addr(4,3)
   /* 
     REQ to A channel 
    */
@@ -130,19 +133,17 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   array_write.valid := write_valid
   dontTouch(array_write)
 
-  //read word idx,compiatble for now newcore
-  val word_idx = req_reg.addr(2)
-  val muxWord = Mux(word_idx, array_resp.bits.data(0)(63,32), array_resp.bits.data(0)(31,0))
+
 
   //need to reg first grant data
   //mux grant data
   val first_grant_data = RegEnable(resp.bits.data, resp.valid && first)
-  val first_word = first_grant_data >> (this_word << 5)
-  val sec_word = (resp.bits.data & Fill(256,done) ) >> (this_word << 5)
+  val first_word = first_grant_data >> (this_word << log2Up(XLEN))
+  val sec_word = (resp.bits.data & Fill(256,done) ) >> (this_word << log2Up(XLEN))
   val word = Mux(this_is_first_grant,first_word,sec_word)
 
   //temp use data to lsu.valid as store instr compelete sig
-  io.data_to_lsu.bits.data := Mux(miss, word, muxWord)
+  io.data_to_lsu.bits.data := Mux(miss, word, array_resp.bits.data(0))
   io.data_to_lsu.valid := Mux(miss, resp.valid && done, array_resp_valid)
   io.resp_from_Achannel.ready := io.data_to_lsu.ready
 }

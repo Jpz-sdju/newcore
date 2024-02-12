@@ -9,9 +9,7 @@ import freechips.rocketchip.util.DontTouch
 import top.Setting
 import utils.PipelineConnect
 import _root_.tile.frontend._
-import utils.LookupTree
-import utils.GenMask
-import utils.MaskExpand
+import utils._
 
 class LSU()(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
@@ -74,11 +72,31 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
   io.in.ready := io.d_req.ready
   // when is l/s instr and resp valid OR alu/other in.valid is true!!
   io.out.valid := io.read_resp.valid && had_inflight || (io.in.valid && !need_op)
-  val size_tree = Seq("b0001".U, "b0010".U, "b0100".U, "b1000".U).zip(Seq("b00000001".U, "b00000011".U, "b00001111".U, "b11111111".U))
-  val sized_resp_data =MaskExpand(LookupTree(UIntToOH(in.lsSize),size_tree)) & io.read_resp.bits.data
+
+
+
+  val read_data_sel = LookupTree(in.lsAddr(2, 0), List(
+    "b000".U -> io.read_resp.bits.data(63, 0),
+    "b001".U -> io.read_resp.bits.data(63, 8),
+    "b010".U -> io.read_resp.bits.data(63, 16),
+    "b011".U -> io.read_resp.bits.data(63, 24),
+    "b100".U -> io.read_resp.bits.data(63, 32),
+    "b101".U -> io.read_resp.bits.data(63, 40),
+    "b110".U -> io.read_resp.bits.data(63, 48),
+    "b111".U -> io.read_resp.bits.data(63, 56)
+  ))
+  val read_data_ext = LookupTree(in.cf.ctrl.fuOpType, List(
+    LSUOpType.lb   -> SignExt(read_data_sel(7, 0) , XLEN),
+    LSUOpType.lh   -> SignExt(read_data_sel(15, 0), XLEN),
+    LSUOpType.lw   -> SignExt(read_data_sel(31, 0), XLEN),
+    LSUOpType.lbu  -> ZeroExt(read_data_sel(7, 0) , XLEN),
+    LSUOpType.lhu  -> ZeroExt(read_data_sel(15, 0), XLEN),
+    LSUOpType.lwu  -> ZeroExt(read_data_sel(31, 0), XLEN),
+    LSUOpType.ld   -> read_data_sel
+  ))
   io.out.bits.WRITE_BACK := Mux(
     had_inflight,
-    sized_resp_data,
+    read_data_ext,
     io.in.bits.WRITE_BACK
   )
 

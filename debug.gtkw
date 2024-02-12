@@ -1,27 +1,29 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sun Feb 11 11:56:35 2024
+[*] Mon Feb 12 05:35:25 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Sun Feb 11 11:55:01 2024"
-[dumpfile_size] 693274
+[dumpfile_mtime] "Mon Feb 12 05:34:31 2024"
+[dumpfile_size] 801775
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 64
-[size] 1368 724
+[timestart] 17
+[size] 1747 998
 [pos] -1 -1
-*-5.231840 95 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-5.045219 48 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.SimTop.
 [treeopen] TOP.SimTop.core.
 [treeopen] TOP.SimTop.core.l_core.
 [treeopen] TOP.SimTop.core.l_core.backend.
+[treeopen] TOP.SimTop.core.l_core.dcache.
+[treeopen] TOP.SimTop.core.l_core.dcache.fsm.
 [treeopen] TOP.SimTop.core.l_core.frontend.
 [treeopen] TOP.SimTop.core.memory.
 [treeopen] TOP.SimTop.core.memory.ram.
 [sst_width] 392
 [signals_width] 492
 [sst_expanded] 1
-[sst_vpaned_height] 215
+[sst_vpaned_height] 596
 @22
 TOP.SimTop.core.l_core.frontend.ifu.pc[31:0]
 @28
@@ -29,13 +31,42 @@ TOP.SimTop.core.l_core.frontend.ifu.io_next
 @200
 -
 @28
-TOP.SimTop.core.l_core.frontend.io_wb_valid
+TOP.SimTop.core.l_core.dcache.fsm.io_req_from_lsu_valid
+@22
+TOP.SimTop.core.l_core.dcache.fsm.io_req_from_lsu_bits_addr[31:0]
+@28
+TOP.SimTop.core.l_core.dcache.fsm.io_req_from_lsu_bits_cmd
 @200
 -
 @28
-TOP.SimTop.core.l_core.backend.lsu.io_d_req_valid
+TOP.SimTop.core.l_core.dcache.fsm.miss
+@29
+TOP.SimTop.core.l_core.dcache.fsm.state[2:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.io_resp_from_Achannel_valid
 @22
-TOP.SimTop.core.l_core.backend.lsu.io_d_req_bits_addr[31:0]
-TOP.SimTop.core.l_core.backend.lsu.io_d_req_bits_wdata[63:0]
+TOP.SimTop.core.l_core.dcache.fsm.io_resp_from_Achannel_bits_data[255:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.io_data_to_lsu_valid
+@22
+TOP.SimTop.core.l_core.dcache.fsm.io_data_to_lsu_bits_data[63:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.backend.lsu.io_read_resp_valid
+@22
+TOP.SimTop.core.l_core.backend.lsu.io_read_resp_bits_data[63:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.ade.io_sourceA_valid
+@22
+TOP.SimTop.core.l_core.dcache.ade.io_sourceA_bits_address[31:0]
+@200
+-
 [pattern_trace] 1
 [pattern_trace] 0

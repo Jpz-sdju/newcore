@@ -52,26 +52,27 @@ class Frontend()(implicit p: Parameters) extends Module with Setting {
   reg_read_port(3) := DontCare
   reg_write_port := DontCare
 
-  // frontend to backend
-  val out_wire = Wire(Decoupled(new PipelineBundle))
-
+  
+  
   // choose source data
   val src_type = decoder_out.bits.cf.ctrl.srcType
   val pc = decoder_out.bits.cf.cf.pc
   val imm = decoder_out.bits.Imm
   val src1 = Mux(SrcType.isReg(src_type(0)), reg_read_port(0).data, pc)
   val src2 = Mux(SrcType.isReg(src_type(1)), reg_read_port(1).data, imm)
+  
 
-  out_wire.bits := decoder_out.bits // 3 signals init
-  out_wire.bits.Src1 := src1
-  out_wire.bits.Src2 := src2
-  out_wire.bits.storeData := src2
-  // out_wire.bits.lsAddr := // init AFTER!!
 
-  out_wire.valid := decoder_out.valid
+  // frontend to backend
+  io.out.valid := decoder_out.valid 
+  io.out.bits := decoder_out.bits // 3 signals init
+  io.out.bits.Src1 := src1
+  io.out.bits.Src2 := src2
+  io.out.bits.storeData := src2
+  // io.out.bits.lsAddr := // init AFTER!!
 
-  decoder_out.ready := out_wire.ready
-  PipelineConnect(out_wire, io.out, io.out.fire, false.B)
+  decoder_out.ready := io.out.ready
+
 
   /* 
   

@@ -71,7 +71,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
     (meta_hit.zip(tag_hit).map { case (a, b) => (a && b).asBool })
   )
 
-  val miss = !res_hit.asUInt.orR && (req_valid && array_resp_valid) && !RegNext(done) || (state === s_refilling)
+  val miss = !res_hit.asUInt.orR && (req_valid ) && !RegNext(done) || (state === s_refilling)
   dontTouch(miss)
   
   // when suocun de valid
@@ -95,7 +95,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module {
   }
   
   // only when state is idle,could let more req in!
-  io.req_from_lsu.ready := (state === s_idle)
+  io.req_from_lsu.ready := (state === s_idle) && !miss
 
   //NOTE!:must clean low 6bits,clear in DadeChannel.scala
   val this_is_first_grant = !req_reg.addr(5)

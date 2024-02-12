@@ -18,7 +18,7 @@ V_FLAG = --cc --exe --build \
 
 
 $(BUILD_DIR)/SimTop.v: $(SCALA_FILE)
-	mill chiselModule.test.runMain Exp $(FIR_OPTS) -parallel 9
+	mill -j 9 chiselModule.test.runMain Exp $(FIR_OPTS) 
 
 sim-verilog: $(BUILD_DIR)/SimTop.v
 

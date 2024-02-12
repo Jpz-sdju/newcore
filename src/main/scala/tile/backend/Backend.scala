@@ -48,27 +48,25 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   io.redirect <> redirect
 
   // assign to exu out,FILL lsAddr!
-  val exu_out = Wire(Decoupled(new PipelineBundle))
   val mem_in = Wire(Decoupled(new PipelineBundle))
   val mem_out = Wire(Decoupled(new PipelineBundle))
   val wb_in = Wire(Decoupled(new PipelineBundle))
 
-  exu_out.bits := io.in.bits
-  exu_out.bits.lsAddr := in.Src1 + in.Imm // init
-  exu_out.bits.WRITE_BACK := Mux(
+  mem_in.bits := io.in.bits
+  mem_in.bits.lsAddr := in.Src1 + in.Imm // init
+  mem_in.bits.WRITE_BACK := Mux(
     in.isAlu,
     alu.io.out.bits.result,
     Mux(jal || jalr, pc + 4.U, Mux(in.isAuipc, pc_with_offset, 0.U))
   )
-  exu_out.valid := io.in.valid
+  mem_in.valid := io.in.valid
 
-  alu.io.out.ready := exu_out.ready
+  alu.io.out.ready := mem_in.ready
   // ready transmit to frontedn
-  io.in.ready := exu_out.ready
+  io.in.ready := mem_in.ready
   /*
   EX to DCACHE
    */
-  PipelineConnect(exu_out, mem_in, mem_in.fire, false.B)
   val lsu = Module(new LSU)
   lsu.io.in <> mem_in
   lsu.io.d_req <> io.d_req
@@ -150,6 +148,5 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   dt_cs.io.medeleg := 0.U
 
   dontTouch(io.in)
-  dontTouch(exu_out)
   dontTouch(mem_in)
 }

@@ -46,7 +46,7 @@ class iadeChannel(edge: TLEdgeOut) extends Module with Setting {
     ._2
 
   // When Get,Put or Acquire is issued,CAN NOT REMAIN VALID!
-  val is_issued = Reg(Bool())
+  val is_issued = RegInit(false.B)
   when(io.sourceA.fire) {
     is_issued := true.B
   }

@@ -38,7 +38,7 @@ class DadeChannel(edge: TLEdgeOut) extends Module with Setting {
 
   val acqu = edge
     .AcquireBlock(
-      fromSource = 0.U,
+      fromSource = 1.U,
       toAddress = Cat(req_reg.addr(31,6), 0.U(6.W)),
       lgSize = 6.U,
       growPermissions = 0.U
@@ -46,7 +46,7 @@ class DadeChannel(edge: TLEdgeOut) extends Module with Setting {
     ._2
 
   // When Get,Put or Acquire is issued,CAN NOT REMAIN VALID!
-  val is_issued = Reg(Bool())
+  val is_issued = RegInit(false.B)
   when(io.sourceA.fire) {
     is_issued := true.B
   }

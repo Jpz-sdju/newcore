@@ -7,7 +7,7 @@ import freechips.rocketchip.rocket.Instructions
 import freechips.rocketchip.util.uintToBitPat
 import utils._
 import freechips.rocketchip.rocket.Instructions._
-
+import chisel3.util.experimental._
 class RfReadPort extends Bundle {
   val addr = Input(UInt(5.W))
   val data = Output(UInt(64.W))
@@ -48,6 +48,8 @@ class Regfile extends Module {
     mem(io.writePorts(1).addr) := io.writePorts(1).data
   }
 
+
+    BoringUtils.addSource(mem(10), "rf_a0")
   for (i <- 0 to 31){
     io.debugPorts(i) := Mux(i.U === 0.U, 0.U, mem(i.U))
   }

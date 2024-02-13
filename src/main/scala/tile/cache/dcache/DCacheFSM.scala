@@ -27,18 +27,18 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
     val resp_grant_done = Input(Bool())
 
     // data to lsu
-    val data_to_lsu = (DecoupledIO(new ReadResp))
+    val resp_to_lsu = (DecoupledIO(new ReadResp))
   })
 
   // LSU req Info
   val req = io.req_from_lsu
   // reg this req
-  val req_reg = RegEnable(req.bits, req.fire)
+  val req_reg = RegEnable(req.bits,  (0.U).asTypeOf(new CacheReq), req.fire)
   val req_valid = RegEnable(req.valid, req.fire)
-  when(io.data_to_lsu.fire) {
+  when(io.resp_to_lsu.fire) {
     req_valid := false.B
   }
-  val req_is_write = req_reg.cmd
+  val req_is_write = req_reg.cmd && req_valid
   val req_write_data = req_reg.wdata
   val req_write_size = req_reg.wsize
 
@@ -54,27 +54,32 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
 
   // assign array to first read,from LSU
   val array = Module(new DcacheArray)
-  array.io.read_req.bits.size := DontCare
-  array.io.read_req.bits.addr := req.bits.addr
-  array.io.read_req.valid := req.valid
+  array.io.data_read_bus.req.bits.setIdx := req.bits.addr(11, 3)
+  array.io.data_read_bus.req.valid := req.valid
+
+  array.io.tag_read_bus.req.bits.setIdx := req.bits.addr(11, 6)
+  array.io.tag_read_bus.req.valid := req.valid
+
+  array.io.meta_read_bus.req.bits.setIdx := req.bits.addr(11, 6)
+  array.io.meta_read_bus.req.valid := req.valid
 
   // array read result
-  val array_resp = array.io.array_read_resp
-  array_resp.ready := true.B
+  val data = array.io.data_read_bus.resp.data
+  val tag = array.io.tag_read_bus.resp.data
+  val meta = array.io.meta_read_bus.resp.data
 
-  val data = array_resp.bits.data
-  val meta = array_resp.bits.meta
-  val tag = array_resp.bits.tag
 
-  // info valid MUST AT array read resp valid!!
-  val array_resp_valid = array_resp.valid
-  val meta_hit = VecInit(meta.map(_ === "b11".U))
+  val meta_hit = VecInit(meta.map {
+    case b => (b === "b11".U || b === "b10".U)
+  }) // temp define: 11 is dirty ,10 is clean
   val tag_hit = VecInit(tag.map(_ === req_reg.addr(31, 12)))
   val res_hit = VecInit(
     (meta_hit.zip(tag_hit).map { case (a, b) => (a && b).asBool })
   )
 
-  val miss = !res_hit.asUInt.orR && (req_valid) && !RegNext(done) || (state === s_refilling)
+  val miss = !res_hit.asUInt.orR && (req_valid) && !RegNext(
+    done
+  ) || (state === s_refilling)
   val miss_and_occupied = miss && meta_hit.asUInt.orR
   when(miss_and_occupied) {
     printf("tag is %x,meta is 11\n", tag(OHToUInt(meta_hit)) << 12)
@@ -102,7 +107,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   }
 
   // only when state is idle,could let more req in!
-  io.req_from_lsu.ready := (state === s_idle) && !miss
+  req.ready := (state === s_idle) && !miss && array.io.data_read_bus.req.ready
 
   // NOTE!:must clean low 6bits,clear in DadeChannel.scala
   val this_is_first_grant = !req_reg.addr(5)
@@ -137,8 +142,9 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   array_write.bits.data := write_data
   array_write.bits.tag := req_reg.addr(31, 12)
   array_write.bits.meta := "b11".U
+  array_write.bits.addr := req_reg.addr
 
-  array_write.valid := write_valid
+  array_write.valid := write_valid 
   dontTouch(array_write)
 
   // need to reg first grant data
@@ -150,7 +156,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   val word = Mux(this_is_first_grant, first_word, sec_word)
 
   // temp use data to lsu.valid as store instr compelete sig
-  io.data_to_lsu.bits.data := Mux(miss, word, array_resp.bits.data(0))
-  io.data_to_lsu.valid := Mux(miss, resp.valid && done, array_resp_valid)
-  io.resp_from_Achannel.ready := io.data_to_lsu.ready
+  io.resp_to_lsu.bits.data := Mux(miss, word, data(0))
+  io.resp_to_lsu.valid := Mux(miss, resp.valid && done, req_valid)
+  io.resp_from_Achannel.ready := io.resp_to_lsu.ready
 }

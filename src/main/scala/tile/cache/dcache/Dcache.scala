@@ -50,7 +50,7 @@ class DcacheImpl(outer: Dcache)(implicit p: Parameters)
   fsm.io.resp_grant_first := ade.io.acquire_grant_first
   fsm.io.resp_grant_done := ade.io.acquire_grant_done
   //data to lsu
-  fsm.io.data_to_lsu <> io.read_resp
+  fsm.io.resp_to_lsu <> io.read_resp
 
   
   // ade connect

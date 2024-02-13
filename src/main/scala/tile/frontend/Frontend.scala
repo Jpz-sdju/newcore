@@ -31,7 +31,7 @@ class Frontend()(implicit p: Parameters) extends Module with Setting {
   iread_req <> ifu.io.read_req
   // icache read resp to decoder
   decoder_in.bits.pred_taken := false.B
-  decoder_in.bits.instr := iread_resp.bits.resp.data
+  decoder_in.bits.instr := Mux(iread_resp.bits.req.addr(2),iread_resp.bits.resp.data(63,32),iread_resp.bits.resp.data(31,0))
   decoder_in.bits.pc := iread_resp.bits.req.addr
   decoder_in.valid := iread_resp.valid
   iread_resp.ready := true.B

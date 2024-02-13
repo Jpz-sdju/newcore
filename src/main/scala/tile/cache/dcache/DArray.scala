@@ -16,13 +16,17 @@ import freechips.rocketchip.diplomaticobjectmodel.model.U
 class DcacheArray() extends Module with Setting {
   val io = IO(new Bundle {
     // set 16kb,4ways,not banked,linesize = 64B
-    val read_req = Flipped(Decoupled(new ReadReq))
+    //                                                              * 8 is for 8 banks
+    val data_read_bus = Flipped(new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways))
+    val tag_read_bus = Flipped(new SRAMReadBus(gen = UInt((32 - 6 - 6).W), set = 64, way = ways))
+    val meta_read_bus = Flipped(new SRAMReadBus(gen = UInt(2.W), set = 64, way = ways))
 
-    val array_read_resp = DecoupledIO(new ArrayRespBundle)
+
     val array_write_req = Flipped(Decoupled(new ArrayWriteBundle))
   })
-  val req = io.read_req
-  val resp = io.array_read_resp
+  val data_read_bus = io.data_read_bus
+  val tag_read_bus = io.tag_read_bus
+  val meta_read_bus = io.meta_read_bus
 
   // three arrays
 
@@ -59,24 +63,18 @@ class DcacheArray() extends Module with Setting {
       holdRead = true
     )
   )
-  val tag_read_bus = Wire(
-    new SRAMReadBus(gen = UInt((32 - 6 - 6).W), set = 64, way = ways)
-  )
-  val meta_read_bus = Wire(
-    new SRAMReadBus(gen = UInt(2.W), set = 64, way = ways)
-  )
   // 0-6 offset,6 idx,20tag
-  val bank_idx = req.bits.addr(5, 3)
-  val set_idx = req.bits.addr(11, 6)
+  val bank_idx = data_read_bus.req.bits.setIdx(2, 0)
+  val set_idx = data_read_bus.req.bits.setIdx(8, 3)
+  val w_set_idx = io.array_write_req.bits.addr
 
   // read addr assign
   for (i <- 0 until 8) {
     val read = Wire(new SRAMReadBus(gen = UInt(64.W), set = 64, way = ways))
-    read.apply(bank_idx === i.U && req.valid, set_idx)
+    read.apply(bank_idx === i.U && data_read_bus.req.valid, set_idx)
     dataArray(i).io.r <> read
   }
-  tag_read_bus.apply(req.valid, set_idx)
-  meta_read_bus.apply(req.valid, set_idx)
+
   tagArray.io.r <> tag_read_bus
   metaArray.io.r <> meta_read_bus
 
@@ -85,12 +83,8 @@ class DcacheArray() extends Module with Setting {
   dontTouch(bank_idx)
   dontTouch(set_idx)
   // assign 4 ways RESULT to outer, bank_idx MUST BE REG!!!!!!
-  resp.bits.data := seqq(RegNext(bank_idx))
-  resp.bits.tag := tagArray.io.r.resp.data
-  resp.bits.meta := metaArray.io.r.resp.data
-  resp.valid := RegNext(req.valid)
-
-  req.ready := true.B
+  data_read_bus.resp.data := seqq(RegNext(bank_idx))
+  data_read_bus.req.ready := dataArray(0).io.r.req.ready
   /*
     WRITE REGION
    */
@@ -122,7 +116,7 @@ class DcacheArray() extends Module with Setting {
     write.apply(
       valid = bankmask(i.U) && write_req.valid,
       data = write_4ways_data(i),
-      setIdx = set_idx,
+      setIdx = w_set_idx(11,6),
       waymask = waymask_onehot.asUInt
     )
     dataArray(i).io.w <> write
@@ -140,8 +134,8 @@ class DcacheArray() extends Module with Setting {
   val write_4ways_meta = WireInit(VecInit(Seq.fill(ways)(0.U(20.W))))
   write_4ways_meta(waymask_uint) := write_req.bits.meta
   
-  tag_write_bus.apply(valid = write_req.valid, data = write_4ways_tag, setIdx = set_idx, waymask = waymask_onehot.asUInt)
-  meta_write_bus.apply(valid = write_req.valid, data = write_4ways_meta, setIdx = set_idx, waymask = waymask_onehot.asUInt)
+  tag_write_bus.apply(valid = write_req.valid, data = write_4ways_tag, setIdx = w_set_idx, waymask = waymask_onehot.asUInt)
+  meta_write_bus.apply(valid = write_req.valid, data = write_4ways_meta, setIdx = w_set_idx, waymask = waymask_onehot.asUInt)
 
   tagArray.io.w <> tag_write_bus
   metaArray.io.w <> meta_write_bus

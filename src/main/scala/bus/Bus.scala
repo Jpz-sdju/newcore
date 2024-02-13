@@ -45,6 +45,7 @@ class WriteBus[T <: Bundle](bun: T) extends Bundle with Setting {
 }
 
 class ArrayWriteBundle extends Bundle {
+  val addr = UInt(32.W)
   val tag = UInt(20.W)
   val data = UInt(256.W)
   val meta = UInt(2.W)
@@ -54,8 +55,6 @@ class ArrayWriteBundle extends Bundle {
 
 //icache and dcache UNIFORM!
 class ArrayRespBundle extends Bundle with Setting{
-  val tag = Vec(ways ,UInt(20.W))
   val data = Vec(ways, UInt(XLEN.W))
-  val meta = Vec(ways, UInt(2.W))
 }
 

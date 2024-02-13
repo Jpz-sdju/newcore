@@ -62,20 +62,22 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
   WB REGION
    */
   val had_inflight = RegInit(false.B)
+  val req_reg = RegEnable(in, need_op)
+  val req_valid = RegEnable(io.in.valid, need_op)
   when(need_op){
     had_inflight := true.B
   }.elsewhen(io.read_resp.valid){
     had_inflight := false.B
   }
-  io.out <> io.in
-  // only when lsu out to wb,could let more in
-  io.in.ready := io.d_req.ready
   // when is l/s instr and resp valid OR alu/other in.valid is true!!
   io.out.valid := io.read_resp.valid && had_inflight || (io.in.valid && !need_op)
+  io.out.bits := Mux(had_inflight, req_reg, io.in.bits)
+  // only when lsu out to wb,could let more in
+  io.in.ready := io.d_req.ready
 
 
 
-  val read_data_sel = LookupTree(in.lsAddr(2, 0), List(
+  val read_data_sel = LookupTree(req_reg.lsAddr(2, 0), List(
     "b000".U -> io.read_resp.bits.data(63, 0),
     "b001".U -> io.read_resp.bits.data(63, 8),
     "b010".U -> io.read_resp.bits.data(63, 16),
@@ -85,7 +87,7 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
     "b110".U -> io.read_resp.bits.data(63, 48),
     "b111".U -> io.read_resp.bits.data(63, 56)
   ))
-  val read_data_ext = LookupTree(in.cf.ctrl.fuOpType, List(
+  val read_data_ext = LookupTree(req_reg.cf.ctrl.fuOpType, List(
     LSUOpType.lb   -> SignExt(read_data_sel(7, 0) , XLEN),
     LSUOpType.lh   -> SignExt(read_data_sel(15, 0), XLEN),
     LSUOpType.lw   -> SignExt(read_data_sel(31, 0), XLEN),

@@ -66,7 +66,7 @@ class DcacheArray() extends Module with Setting {
   // 0-6 offset,6 idx,20tag
   val bank_idx = data_read_bus.req.bits.setIdx(2, 0)
   val set_idx = data_read_bus.req.bits.setIdx(8, 3)
-  val w_set_idx = io.array_write_req.bits.addr
+  val w_set_idx = io.array_write_req.bits.addr(11,6)
 
   // read addr assign
   for (i <- 0 until 8) {
@@ -116,7 +116,7 @@ class DcacheArray() extends Module with Setting {
     write.apply(
       valid = bankmask(i.U) && write_req.valid,
       data = write_4ways_data(i),
-      setIdx = w_set_idx(11,6),
+      setIdx = w_set_idx,
       waymask = waymask_onehot.asUInt
     )
     dataArray(i).io.w <> write

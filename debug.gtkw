@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Feb 13 06:36:28 2024
+[*] Tue Feb 13 07:29:03 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Tue Feb 13 06:35:44 2024"
-[dumpfile_size] 816305
+[dumpfile_mtime] "Tue Feb 13 07:26:41 2024"
+[dumpfile_size] 959021
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 0
-[size] 1751 1002
-[pos] -1 -1
-*-5.773917 70 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 206
+[size] 1762 951
+[pos] 58 95
+*-4.559792 297 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.SimTop.
 [treeopen] TOP.SimTop.core.
@@ -18,15 +18,13 @@
 [treeopen] TOP.SimTop.core.l_core.dcache.
 [treeopen] TOP.SimTop.core.l_core.dcache.fsm.
 [treeopen] TOP.SimTop.core.l_core.frontend.
-[treeopen] TOP.SimTop.core.l_core.icache.
 [treeopen] TOP.SimTop.core.l_core.icache.fsm.
-[treeopen] TOP.SimTop.core.l_core.icache.fsm.array.
 [treeopen] TOP.SimTop.core.memory.
 [treeopen] TOP.SimTop.core.memory.ram.
 [sst_width] 392
-[signals_width] 670
+[signals_width] 511
 [sst_expanded] 1
-[sst_vpaned_height] 598
+[sst_vpaned_height] 562
 @22
 TOP.SimTop.core.l_core.frontend.ifu.pc[31:0]
 @28
@@ -38,9 +36,34 @@ TOP.SimTop.core.l_core.icache.fsm.io_req_from_lsu_valid
 @200
 -
 @28
-TOP.SimTop.core.l_core.icache.fsm.state[2:0]
-TOP.SimTop.core.l_core.icache.fsm.io_req_from_lsu_valid
-@29
-TOP.SimTop.core.l_core.icache.fsm.io_req_from_lsu_ready
+TOP.SimTop.core.l_core.dcache.fsm.miss
+@22
+TOP.SimTop.core.l_core.dcache.fsm.req_reg_addr[31:0]
+@28
+TOP.SimTop.core.l_core.dcache.fsm.req_reg_cmd
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.io_req_to_Achannel_valid
+@22
+TOP.SimTop.core.l_core.dcache.fsm.io_req_to_Achannel_bits_addr[31:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.io_resp_from_Achannel_valid
+TOP.SimTop.core.l_core.backend.lsu.io_read_resp_valid
+@22
+TOP.SimTop.core.l_core.dcache.fsm.io_resp_from_Achannel_bits_data[255:0]
+@200
+-
+@22
+TOP.SimTop.core.l_core.backend.lsu.io_read_resp_bits_data[63:0]
+TOP.SimTop.core.l_core.backend.lsu.io_out_bits_cf_cf_pc[38:0]
+TOP.SimTop.core.l_core.backend.lsu.req_reg_lsAddr[63:0]
+TOP.SimTop.core.l_core.backend.lsu.read_data_sel[63:0]
+TOP.SimTop.core.l_core.backend.lsu.io_out_bits_WRITE_BACK[63:0]
+TOP.SimTop.core.l_core.backend.lsu.io_in_bits_cf_ctrl_ldest[4:0]
+@201
+-
 [pattern_trace] 1
 [pattern_trace] 0

@@ -142,7 +142,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   array_write.bits.data := write_data
   array_write.bits.tag := req_reg.addr(31, 12)
   array_write.bits.meta := "b11".U
-  array_write.bits.addr := req_reg.addr
+  array_write.bits.addr := Cat(req_reg.addr(31,6), 0.U(6.W))// temporary
 
   array_write.valid := write_valid 
   dontTouch(array_write)

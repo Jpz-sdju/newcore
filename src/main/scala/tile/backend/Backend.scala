@@ -87,6 +87,10 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
 
   alu.io.out.ready := true.B
 
+  /* 
+    DIFFETST REGION
+  
+   */
   val dt_te = Module(new DifftestTrapEvent)
   val cycle_cnt = RegInit(0.U(64.W))
   cycle_cnt := cycle_cnt + 1.U

@@ -1,14 +1,14 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Feb 12 07:47:29 2024
+[*] Tue Feb 13 02:51:30 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Mon Feb 12 07:43:33 2024"
-[dumpfile_size] 4912392
+[dumpfile_mtime] "Tue Feb 13 02:50:33 2024"
+[dumpfile_size] 4914395
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 1857
-[size] 1847 1026
-[pos] 13 14
+[timestart] 1854
+[size] 1868 898
+[pos] -1 -1
 *-4.052073 1924 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.SimTop.
@@ -21,9 +21,9 @@
 [treeopen] TOP.SimTop.core.memory.
 [treeopen] TOP.SimTop.core.memory.ram.
 [sst_width] 392
-[signals_width] 520
+[signals_width] 511
 [sst_expanded] 1
-[sst_vpaned_height] 618
+[sst_vpaned_height] 524
 @22
 TOP.SimTop.core.l_core.frontend.ifu.pc[31:0]
 @28
@@ -40,7 +40,21 @@ TOP.SimTop.core.l_core.backend.lsu.io_read_resp_bits_data[63:0]
 TOP.SimTop.core.l_core.dcache.fsm.req_valid
 @22
 TOP.SimTop.core.l_core.dcache.fsm.req_reg_addr[31:0]
-@29
+@28
 TOP.SimTop.core.l_core.dcache.fsm.req_reg_cmd
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.meta_hit_0
+TOP.SimTop.core.l_core.dcache.fsm.meta_hit_1
+TOP.SimTop.core.l_core.dcache.fsm.meta_hit_2
+TOP.SimTop.core.l_core.dcache.fsm.meta_hit_3
+@200
+-
+@29
+TOP.SimTop.core.l_core.dcache.fsm.array_io_array_read_resp_bits_meta_0[1:0]
+TOP.SimTop.core.l_core.dcache.fsm.array_io_array_read_resp_bits_meta_1[1:0]
+TOP.SimTop.core.l_core.dcache.fsm.array_io_array_read_resp_bits_meta_2[1:0]
+TOP.SimTop.core.l_core.dcache.fsm.array_io_array_read_resp_bits_meta_3[1:0]
 [pattern_trace] 1
 [pattern_trace] 0

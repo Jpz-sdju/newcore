@@ -16,7 +16,7 @@ import freechips.rocketchip.diplomaticobjectmodel.model.U
 
 class CtrlFlow(implicit p: Parameters) extends Bundle with Setting {
   val instr = UInt(32.W)
-  val pc = UInt(VAddrBits.W)
+  val pc = UInt(32.W)
   val pred_taken = Bool()
 }
 class CtrlSignals(implicit p: Parameters) extends Bundle with Setting {

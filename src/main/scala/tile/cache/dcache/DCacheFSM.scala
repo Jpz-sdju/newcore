@@ -170,7 +170,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
     req_reg.addr(4, 3),
     List(
       "b00".U -> Cat(
-        oridata(255, 64),
+        0.U(192.W),
         MaskData(
           data(OHToUInt(res_hit)),
           req_reg.wdata,
@@ -178,22 +178,22 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
         )
       ),
       "b01".U -> Cat(
-        oridata(255, 128),
+        0.U(128.W),
         MaskData(
           data(OHToUInt(res_hit)),
           req_reg.wdata,
           MaskExpand(req_reg.wmask)
         ),
-        oridata(63, 0)
+        0.U(64.W)
       ),
       "b10".U -> Cat(
-        oridata(255, 192),
+        0.U(64.W),
         MaskData(
           data(OHToUInt(res_hit)),
           req_reg.wdata,
           MaskExpand(req_reg.wmask)
         ),
-        oridata(127, 0)
+        0.U(128.W)
       ),
       "b11".U -> Cat(
         MaskData(
@@ -201,11 +201,11 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
           req_reg.wdata,
           MaskExpand(req_reg.wmask)
         ),
-        oridata(191, 0)
+        0.U(192.W)
       )
     )
   )
-  val write_data = Mux(write_miss, write_miss_data, Mux(write_hit, write_hit_data, oridata))
+  val write_data = Mux(write_miss, Mux(this_is_first_grant,write_miss_data, oridata), Mux(write_hit, write_hit_data, oridata))
 
   val refill_bank_mask = Mux(first, "b00001111".U, "b11110000".U)
   val write_hit_bank_mask = UIntToOH(req_reg.addr(5, 3))

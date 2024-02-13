@@ -56,7 +56,7 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   mem_in.bits := io.in.bits
   mem_in.bits.lsAddr := in.Src1 + in.Imm // init
   mem_in.bits.WRITE_BACK := Mux(
-    in.isAlu,
+    in.isAlu ,
     alu.io.out.bits.result,
     Mux(jal || jalr, pc + 4.U, Mux(in.isAuipc, pc_with_offset, 0.U))
   )

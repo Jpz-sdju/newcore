@@ -33,7 +33,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   // LSU req Info
   val req = io.req_from_lsu
   // reg this req
-  val req_reg = RegEnable(req.bits,  (0.U).asTypeOf(new CacheReq), req.fire)
+  val req_reg = RegEnable(req.bits, (0.U).asTypeOf(new CacheReq), req.fire)
   val req_valid = RegEnable(req.valid, req.fire)
   when(io.resp_to_lsu.fire) {
     req_valid := false.B
@@ -67,7 +67,9 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   val data = array.io.data_read_bus.resp.data
   val tag = array.io.tag_read_bus.resp.data
   val meta = array.io.meta_read_bus.resp.data
-
+  dontTouch(data)
+  dontTouch(tag)
+  dontTouch(meta)
 
   val meta_hit = VecInit(meta.map {
     case b => (b === "b11".U || b === "b10".U)
@@ -123,28 +125,76 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
     ARRAY WRITE REGION
    */
   val array_write = array.io.array_write_req
-  // write is at: 1.req is read, miss,refill 2,req is write ,miss, merge refill. 3, req is write hit,merge refill
-  val need_refill = (first || done) && resp.valid
+  // write is at:
+  // 1. req is read, miss, refill
+  // 2, req is write, miss, merge refill.
+  // 3, req is write, hit, merge refill
+  val read_miss = !req_reg.cmd && req_valid && miss
+  val write_miss = req_is_write && miss
+  val write_hit = req_is_write && !miss
+
+  val refill_time = (first || done) && resp.valid
+  val write_valid =
+    (read_miss && refill_time) || (write_miss && refill_time) || write_hit
+
   val need_write_merge =
     miss && req_is_write && (this_is_first_grant && first || !this_is_first_grant && done)
-  val write_valid = Mux(miss, need_refill, req_is_write)
 
-  val merge_data = MaskData(
-    SelectDword(resp.bits.data, req_reg.addr(4, 3)),
-    req_reg.wdata,
-    req_reg.wmask
-  )
-  val write_data = Mux(need_write_merge, merge_data, resp.bits.data)
-  dontTouch(need_write_merge)
+  val oridata = resp.bits.data
+  val write_miss_data = LookupTree(req_reg.addr(4,3),List(
+    "b00".U -> Cat(
+      oridata(255, 64),
+      MaskData(oridata(63, 0), req_reg.wdata, MaskExpand(req_reg.wmask))
+    ),
+    "b01".U -> Cat(
+      oridata(255, 128),
+      MaskData(oridata(127, 64), req_reg.wdata, MaskExpand(req_reg.wmask)),
+      oridata(63,0)
+    ),
+    "b10".U -> Cat(
+      oridata(255, 192),
+      MaskData(oridata(191, 128), req_reg.wdata, MaskExpand(req_reg.wmask)),
+      oridata(127,0)
+    ),
+    "b11".U -> Cat(
+      MaskData(oridata(255, 192), req_reg.wdata, MaskExpand(req_reg.wmask)),
+      oridata(191,0)
+    )
+  ))
 
-  array_write.bits.bank_mask := Mux(first, "b00001111".U, "b11110000".U).asBools
+  val write_hit_data = LookupTree(req_reg.addr(4,3) ,List(
+    "b00".U -> Cat(
+      oridata(255, 64),
+      MaskData(data(OHToUInt(res_hit)), req_reg.wdata, MaskExpand(req_reg.wmask))
+    ),
+    "b01".U -> Cat(
+      oridata(255, 128),
+      MaskData(data(OHToUInt(res_hit)), req_reg.wdata, MaskExpand(req_reg.wmask)),
+      oridata(63,0)
+    ),
+    "b10".U -> Cat(
+      oridata(255, 192),
+      MaskData(data(OHToUInt(res_hit)), req_reg.wdata, MaskExpand(req_reg.wmask)),
+      oridata(127,0)
+    ),
+    "b11".U -> Cat(
+      MaskData(data(OHToUInt(res_hit)), req_reg.wdata, MaskExpand(req_reg.wmask)),
+      oridata(191,0)
+    )
+  ))
+  val write_data = Mux(need_write_merge, write_miss_data, Mux(write_hit, write_hit_data, oridata))
+
+  val refill_bank_mask = Mux(first, "b00001111".U, "b11110000".U)
+  val write_hit_bank_mask = UIntToOH(req_reg.addr(5,3))
+
+  array_write.bits.bank_mask := Mux(need_write_merge, refill_bank_mask, write_hit_bank_mask).asBools
   array_write.bits.way_mask := ("b0001".U(4.W)).asBools
   array_write.bits.data := write_data
   array_write.bits.tag := req_reg.addr(31, 12)
   array_write.bits.meta := "b11".U
-  array_write.bits.addr := Cat(req_reg.addr(31,6), 0.U(6.W))// temporary
+  array_write.bits.addr := Cat(req_reg.addr(31, 6), 0.U(6.W)) // temporary
 
-  array_write.valid := write_valid 
+  array_write.valid := write_valid
   dontTouch(array_write)
 
   // need to reg first grant data

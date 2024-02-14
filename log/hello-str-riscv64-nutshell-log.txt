@@ -1,0 +1,393 @@
+is write req,addr is 80000000, data is 0000000000000000
+is write req,addr is 80000000, data is 0000000000000000
+is write req,addr is 8000011c, data is 0000000000000000
+is write req,addr is 8000011c, data is 0000000000000000
+is write req,addr is 80009ff8, data is 0000000080000010
+is write req,addr is 80009ff8, data is 0000000080000010
+is write req,addr is 80000140, data is 0000000000000000
+is write req,addr is 80000140, data is 0000000000000000
+is write req,addr is e0001000, data is 0303030303030303
+is write req,addr is e0001000, data is 0303030303030303
+is write req,addr is 80009fe0, data is 0000000000000000
+is write req,addr is 80000040, data is 0000000000000000
+is write req,addr is 80000040, data is 0000000000000000
+is write req,addr is 80009fe8, data is 0000000080000134
+is write req,addr is 800017c0, data is 0000000000000000
+is write req,addr is 800017c0, data is 0000000000000000
+is write req,addr is 80009fb0, data is 0000000080001840
+is write req,addr is 80009fb0, data is 0000000080001840
+is write req,addr is 80009fb8, data is 9bcc5df3700e832c
+is write req,addr is 80009fc0, data is 0000000000000003
+is write req,addr is 80009fa8, data is 0000000080000060
+is write req,addr is 80009fc8, data is 00000000e0001000
+is write req,addr is 80009fd0, data is 67aa7660be247a37
+is write req,addr is 80009fd8, data is 2daccc61a7bf9d82
+is write req,addr is 80009f98, data is 0000000080009fb0
+is write req,addr is 80001800, data is 0000000000000000
+is write req,addr is 80001800, data is 0000000000000000
+is write req,addr is 80000dec, data is 0000000000000000
+is write req,addr is 80000dec, data is 0000000000000000
+is write req,addr is 80009f78, data is f5f0d7f097e37329
+is write req,addr is 80009f78, data is f5f0d7f097e37329
+is write req,addr is 80009f70, data is d2c36fe031f01db1
+is write req,addr is 80009f68, data is a2d58711fe96d750
+is write req,addr is 80009f60, data is 63a29416a810a95c
+is write req,addr is 80000e00, data is 0000000000000000
+is write req,addr is 80000e00, data is 0000000000000000
+is write req,addr is 80009f50, data is 90aabf4c553c174f
+is write req,addr is 80009f88, data is 0000000080001804
+is write req,addr is 80009f80, data is 0000000080001b88
+is write req,addr is 80009f58, data is a34cafc68a4aea24
+is write req,addr is 80009f48, data is 3c3924830812c6df
+is write req,addr is 80009f40, data is 2b4111ab3300f8b2
+is write req,addr is 80009f38, data is 6aef9a8a78d350e6
+is write req,addr is 80009f38, data is 6aef9a8a78d350e6
+is write req,addr is 80009f30, data is ad59a887571997aa
+is write req,addr is 80009f28, data is 4b361e19cd470872
+is write req,addr is 80000e40, data is 0000000000000000
+is write req,addr is 80000e40, data is 0000000000000000
+is write req,addr is 80001850, data is 0000000000000000
+is write req,addr is 80001850, data is 0000000000000000
+is write req,addr is 80009f08, data is 0000000000000800
+is write req,addr is 80009f10, data is 000000000000ffff
+is write req,addr is 80000e90, data is 0000000000000000
+is write req,addr is 80000e90, data is 0000000000000000
+is write req,addr is 80000ed0, data is 0000000000000000
+is write req,addr is 80000ed0, data is 0000000000000000
+is write req,addr is 80000f00, data is 0000000000000000
+is write req,addr is 80000f00, data is 0000000000000000
+is write req,addr is 80001930, data is 0000000000000000
+is write req,addr is 80001930, data is 0000000000000000
+is write req,addr is 80000f8c, data is 0000000000000000
+is write req,addr is 80000f8c, data is 0000000000000000
+is write req,addr is 80001a88, data is 0000000000000000
+is write req,addr is 80001a88, data is 0000000000000000
+is write req,addr is 80001278, data is 0000000000000000
+is write req,addr is 80001278, data is 0000000000000000
+is write req,addr is 80001280, data is 0000000000000000
+is write req,addr is 80001280, data is 0000000000000000
+is write req,addr is 80009f18, data is 0000000080009fb8
+is write req,addr is 800013c4, data is 0000000000000000
+is write req,addr is 800013c4, data is 0000000000000000
+is write req,addr is 800012c0, data is 0000000000000000
+is write req,addr is 800012c0, data is 0000000000000000
+is write req,addr is 80001564, data is 0000000000000000
+is write req,addr is 80001564, data is 0000000000000000
+is write req,addr is 80001744, data is 0000000000000000
+is write req,addr is 80001744, data is 0000000000000000
+is write req,addr is 80001420, data is 0000000000000000
+is write req,addr is 80001420, data is 0000000000000000
+is write req,addr is 800001b4, data is 0000000000000000
+is write req,addr is 800001b4, data is 0000000000000000
+is write req,addr is 80001b88, data is 4848484848484848
+is write req,addr is 80001b88, data is 4848484848484848
+is write req,addr is 800001c0, data is 0000000000000000
+is write req,addr is 800001c0, data is 0000000000000000
+is write req,addr is 80001440, data is 0000000000000000
+is write req,addr is 80001440, data is 0000000000000000
+is write req,addr is 80001b89, data is 6565656565656565
+is write req,addr is 80001b8a, data is 6c6c6c6c6c6c6c6c
+is write req,addr is 80001b8b, data is 6c6c6c6c6c6c6c6c
+is write req,addr is 80001b8c, data is 6f6f6f6f6f6f6f6f
+is write req,addr is 80001b8d, data is 2020202020202020
+is write req,addr is 80001b8e, data is 7777777777777777
+is write req,addr is 80001b8f, data is 6f6f6f6f6f6f6f6f
+is write req,addr is 80001b90, data is 7272727272727272
+is write req,addr is 80001b91, data is 6c6c6c6c6c6c6c6c
+is write req,addr is 80001b92, data is 6464646464646464
+is write req,addr is 80001b93, data is 2121212121212121
+is write req,addr is 80001b94, data is 0a0a0a0a0a0a0a0a
+is write req,addr is 8000148c, data is 0000000000000000
+is write req,addr is 8000148c, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001038, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001038, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001044, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001044, data is 0000000000000000
+is write req,addr is 80001b95, data is 0000000000000000
+is write req,addr is 80001080, data is 0000000000000000
+is write req,addr is 80001080, data is 0000000000000000
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 80000060, data is 0000000000000000
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 80000060, data is 0000000000000000
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 8000001c, data is 0000000000000000
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 8000001c, data is 0000000000000000
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tagsh: 1: spike-dasm: not found
+Emu compiled at Feb 14 2024, 08:06:22
+The image is ready2run/hello-str-riscv64-nutshell.bin
+Using simulated 256MB RAM
+NemuProxy using ./ready2run/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled. 
+
+============== Commit Group Trace (Core 0) ==============
+commit group [00]: pc 0080000324 cmtcnt 1
+commit group [01]: pc 0080000328 cmtcnt 1
+commit group [02]: pc 008000032c cmtcnt 1
+commit group [03]: pc 0080000330 cmtcnt 1
+commit group [04]: pc 0080000334 cmtcnt 1
+commit group [05]: pc 0080000414 cmtcnt 1
+commit group [06]: pc 0080000418 cmtcnt 1
+commit group [07]: pc 008000041c cmtcnt 1
+commit group [08]: pc 0080000420 cmtcnt 1
+commit group [09]: pc 0080000354 cmtcnt 1
+commit group [10]: pc 0080000358 cmtcnt 1
+commit group [11]: pc 008000035c cmtcnt 1
+commit group [12]: pc 0080000360 cmtcnt 1
+commit group [13]: pc 0080000364 cmtcnt 1
+commit group [14]: pc 0080000368 cmtcnt 1
+commit group [15]: pc 0080000374 cmtcnt 1 <--
+
+============== Commit Instr Trace ==============
+commit inst [00]: pc 0080001158 inst 00d13423 wen 0 dst 00000008 data 0000000000000000
+commit inst [01]: pc 008000115c inst 01513023 wen 0 dst 00000000 data 0000000080001744
+commit inst [02]: pc 0080001160 inst 00058813 wen 1 dst 00000010 data 000000000000000a
+commit inst [03]: pc 0080001164 inst 01f5579b wen 1 dst 0000000f data 0000000000000000
+commit inst [04]: pc 0080001168 inst 00048693 wen 1 dst 0000000d data ffffffffffffffff
+commit inst [05]: pc 008000116c inst 00090593 wen 1 dst 0000000b data 0000000080001b88
+commit inst [06]: pc 0080001170 inst 00098513 wen 1 dst 0000000a data 00000000800001b4
+commit inst [07]: pc 0080001174 inst 990ff0ef wen 1 dst 00000001 data 0000000080001178
+commit inst [08]: pc 0080000304 inst fb010113 wen 1 dst 00000002 data 0000000080009ea0
+commit inst [09]: pc 0080000308 inst 04113423 wen 0 dst 00000008 data 0000000000000000
+commit inst [10]: pc 008000030c inst 05812083 wen 1 dst 00000001 data 0000000000000000
+commit inst [11]: pc 0080000310 inst 02913c23 wen 0 dst 00000018 data 0000000000000000
+commit inst [12]: pc 0080000314 inst 03313423 wen 0 dst 00000008 data 0000000000000000
+commit inst [13]: pc 0080000318 inst 04813023 wen 0 dst 00000000 data 0000000080001744
+commit inst [14]: pc 008000031c inst 03213823 wen 0 dst 00000010 data 000000000000000a
+commit inst [15]: pc 0080000320 inst 00080e93 wen 1 dst 0000001d data 000000000000000a
+commit inst [16]: pc 0080000324 inst 05012983 wen 1 dst 00000013 data 0000000000000000
+commit inst [17]: pc 0080000328 inst 00070e13 wen 1 dst 0000001c data 0000000000000001
+commit inst [18]: pc 008000032c inst 00078493 wen 1 dst 00000009 data 0000000000000000
+commit inst [19]: pc 0080000330 inst 4000f813 wen 1 dst 00000010 data 0000000000000000
+commit inst [20]: pc 0080000334 inst 0e071063 wen 0 dst 00000000 data 0000000080001744
+commit inst [21]: pc 0080000414 inst 0200f793 wen 1 dst 0000000f data 0000000000000000
+commit inst [22]: pc 0080000418 inst 0100f913 wen 1 dst 00000012 data 0000000000000000
+commit inst [23]: pc 008000041c inst 06100293 wen 1 dst 00000005 data 0000000000000061
+commit inst [24]: pc 0080000420 inst f2078ae3 wen 0 dst 00000015 data 0000000000000000
+commit inst [25]: pc 0080000354 inst 00000793 wen 1 dst 0000000f data 0000000000000000
+commit inst [26]: pc 0080000358 inst 00010713 wen 1 dst 0000000e data 0000000080009ea0
+commit inst [27]: pc 008000035c inst 00900393 wen 1 dst 00000007 data 0000000000000009
+commit inst [28]: pc 0080000360 inst ff62829b wen 1 dst 00000005 data 0000000000000057
+commit inst [29]: pc 0080000364 inst 02000413 wen 1 dst 00000008 data 0000000000000020
+commit inst [30]: pc 0080000368 inst 00c0006f wen 1 dst 00000000 data 000000008000036c
+commit inst [31]: pc 0080000374 inst 03de7f33 wen 1 dst 0000001e data 0000000000000000 <--
+
+==============  REF Regs  ==============
+  $0: 0x0000000000000000   ra: 0x0000000000000000   sp: 0x0000000080009ea0   gp: 0xa7eed0187cb584f0 
+  tp: 0x398cc2b754431246   t0: 0x0000000000000057   t1: 0x0000000080009fb0   t2: 0x0000000000000009 
+  s0: 0x0000000000000020   s1: 0x0000000000000000   a0: 0x00000000800001b4   a1: 0x0000000080001b88 
+  a2: 0x0000000000000000   a3: 0xffffffffffffffff   a4: 0x0000000080009ea0   a5: 0x0000000000000000 
+  a6: 0x0000000000000000   a7: 0x0000000000000000   s2: 0x0000000000000000   s3: 0x0000000000000000 
+  s4: 0x0000000080009fb0   s5: 0x0000000000000000   s6: 0x000000008000185a   s7: 0x00000000800018c0 
+  s8: 0x0000000000000000   s9: 0x0000000080009fb8  s10: 0xad59a887571997aa  s11: 0x4b361e19cd470872 
+  t3: 0x0000000000000001   t4: 0x000000000000000a   t5: 0x0000000000000001   t6: 0xb06b756bef782d5a 
+ ft0: 0x000980e702000513  ft1: 0x000c8a13ff8d14e3  ft2: 0x000c0613c31ff06f  ft3: 0x0009059300048693 
+ ft4: 0x001c0c1302500513  ft5: 0xc15ff06f000980e7  ft6: 0x008a0793000a3d03  ft7: 0x000d450302f13423 
+ fs0: 0x0208969312088e63  fs1: 0x12050c630206d693  fa0: 0x00168693fff68693  fa1: 0x000d0d9300dd06b3 
+ fa2: 0x00dd88630080006f  fa3: 0x001d8d93001dc703  fa4: 0x41ad8dbbfe071ae3  fa5: 0x000c8a6340087c93 
+ fa6: 0x011df46300088713  fa7: 0x00070d9b000d8713  fs2: 0x2804046300287413  fs3: 0x120c8e6316050863 
+ fs4: 0x0208d89302089893  fs5: 0x000c061301888cb3  fs6: 0x0004869314cc8863  fs7: 0x00160a1300090593 
+ fs8: 0x418a0733000980e7  fs9: 0x0007450300ed0733 fs10: 0x000a061324050063 fs11: 0x02186793fd9ff06f 
+ ft8: 0x0007879b000a3703  ft9: 0x0100079300f13423 ft10: 0x00f13023000c0613 ft11: 0x0000079301000813 
+pc: 0x0000000080000378 mstatus: 0x0000000000000000 mcause: 0x0000000000000000 mepc: 0x0000000000000000
+                       sstatus: 0x0000000000000000 scause: 0x0000000000000000 sepc: 0x0000000000000000
+satp: 0x0000000000000000
+mip: 0x0000000000000000 mie: 0x0000000000000000 mscratch: 0x0000000000000000 sscratch: 0x0000000000000000
+mideleg: 0x0000000000000000 medeleg: 0x0000000000000000
+mtval: 0x0000000000000000 stval: 0x0000000000000000 mtvec: 0x0000000000000000 stvec: 0x0000000000000000
+privilege mode:3  pmp: below
+ 0: cfg:0x00 addr:0x0000000000000000| 1: cfg:0x00 addr:0x0000000000000000
+ 2: cfg:0x00 addr:0x0000000000000000| 3: cfg:0x00 addr:0x0000000000000000
+pmp csr rw: enable, pmp check: disable
+ is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 80000080, data is 0000000000000000
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 80000080, data is 0000000000000000
+is write req,addr is 80009fb0, data is 0000000000000001
+is write req,addr is 80009fb8, data is 0000000000000001
+is write req,addr is 80009fc0, data is 0000000000000002
+is write req,addr is 80009fa8, data is 0000000080000094
+is write req,addr is 80009fc8, data is 0000000000000000
+is write req,addr is 80009fd0, data is 0000000000000000
+is write req,addr is 80009fd8, data is 0000000000000000
+is write req,addr is 80009f98, data is 0000000080009fb0
+is write req,addr is 80009f78, data is f5f0d7f097e37329
+is write req,addr is 80009f70, data is d2c36fe031f01db1
+is write req,addr is 80009f68, data is a2d58711fe96d750
+is write req,addr is 80009f60, data is 63a29416a810a95c
+is write req,addr is 80009f50, data is 90aabf4c553c174f
+is write req,addr is 80009f88, data is 0000000080001804
+is write req,addr is 80009f80, data is 0000000080001b88
+is write req,addr is 80009f58, data is a34cafc68a4aea24
+is write req,addr is 80009f48, data is 3c3924830812c6df
+is write req,addr is 80009f40, data is 2b4111ab3300f8b2
+is write req,addr is 80009f38, data is 6aef9a8a78d350e6
+is write req,addr is 80009f30, data is ad59a887571997aa
+is write req,addr is 80009f28, data is 4b361e19cd470872
+is write req,addr is 80009f08, data is 0000000000000800
+is write req,addr is 80009f10, data is 000000000000ffff
+is write req,addr is 80001a4c, data is 0000000000000000
+is write req,addr is 80001a4c, data is 0000000000000000
+is write req,addr is 800010cc, data is 0000000000000000
+is write req,addr is 800010cc, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001100, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001100, data is 0000000000000000
+is write req,addr is 800016cc, data is 0000000000000000
+is write req,addr is 800016cc, data is 0000000000000000
+is write req,addr is 80001734, data is 0000000000000000
+is write req,addr is 80001734, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001154, data is 0000000000000000
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+tag is 80000000,meta is 11
+is write req,addr is 80001154, data is 0000000000000000
+is write req,addr is 80009ef8, data is 0000000000000000
+is write req,addr is 80009ef8, data is 0000000000000000
+is write req,addr is 80009ef0, data is 0000000000000000
+is write req,addr is 80000304, data is 0000000000000000
+is write req,addr is 80000304, data is 0000000000000000
+is write req,addr is 80009ee8, data is 0000000080001178
+is write req,addr is 80009ed8, data is ffffffffffffffff
+is write req,addr is 80009ec8, data is 00000000800001b4
+is write req,addr is 80009ee0, data is 0000000000000000
+is write req,addr is 80009ed0, data is 0000000080001b88
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 80000414, data is 0000000000000000
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+tag is 80001000,meta is 11
+is write req,addr is 80000414, data is 0000000000000000
+is write req,addr is 80000354, data is 0000000000000000
+is write req,addr is 80000354, data is 0000000000000000
+priviledgeMode: 3
+     t5 different at pc = 0x0080000374, right= 0x0000000000000001, wrong = 0x0000000000000000
+Core 0: [31mABORT at pc = 0x0
+[0m[35mtotal guest instructions = 672
+[0m[35minstrCnt = 672, cycleCnt = 3,031, IPC = 0.221709
+[0m[34mSeed=0 Guest cycle spent: 3,032 (this will be different from cycleCnt if emu loads a snapshot)
+[0m[34mHost time spent: 7ms
+[0m

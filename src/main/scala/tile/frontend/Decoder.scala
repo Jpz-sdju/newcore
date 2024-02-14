@@ -35,6 +35,7 @@ class Decoder()(implicit p: Parameters) extends Module  {
   val out = io.out.bits
   out.cf := decode_unit_out
   out.isAlu := FuType.isAluExu(fuType)
+  out.isMdu := (fuType === FuType.div) || (fuType === FuType.mul)
   out.isBranch := FuType.isAluExu(fuType) && ALUOpType.isBranch(fuOpType)
   out.isJmp := FuType.isJumpExu(fuType) &&JumpOpType.jumpOpisJ(fuOpType)
   out.isAuipc := FuType.isJumpExu(fuType) && JumpOpType.jumpOpisAuipc(fuOpType) 

@@ -33,11 +33,12 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   IDU TO EXU
    */
 
+  // alu region
   val alu = Module(new ALU)
   alu.io.in.bits.cf := in.cf
   alu.io.in.bits.src(0) := in.Src1
   alu.io.in.bits.src(1) := in.Src2
-  alu.io.in.valid := in.isAlu
+  alu.io.in.valid := in.isAlu && io.in.valid
   // assign redirect
   val redirect = Wire(DecoupledIO(UInt(XLEN.W)))
   val jal = in.isJmp && in.cf.ctrl.fuOpType === JumpOpType.jal
@@ -48,20 +49,41 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   redirect.valid := io.in.valid && (jal || jalr || alu.io.taken_branch)
   io.redirect <> redirect
 
+  // mdu region
+  val mdu = Module(new SSDMDU)
+  mdu.io.divflush := false.B
+  mdu.io.in.bits.func := in.cf.ctrl.fuOpType
+  mdu.io.in.bits.src1 := in.Src1
+  mdu.io.in.bits.src2 := in.Src2
+  mdu.io.in.valid := in.isMdu && io.in.valid
+
   // assign to exu out,FILL lsAddr!
   val mem_in = Wire(Decoupled(new PipelineBundle))
   val mem_out = Wire(Decoupled(new PipelineBundle))
   val wb_in = Wire(Decoupled(new PipelineBundle))
+  //this instr is mdu
+  val have_mdu = RegInit(false.B)
+  val mdu_reg = RegEnable(in, mdu.io.in.fire)
+  when(mdu.io.in.fire) {
+    have_mdu := true.B
+  }.elsewhen(mdu.io.out.fire) {
+    have_mdu := false.B
+  }
 
-  mem_in.bits := io.in.bits
+  mem_in.bits := Mux(have_mdu || mdu.io.in.fire , mdu_reg, io.in.bits)
   mem_in.bits.lsAddr := in.Src1 + in.Imm // init
   mem_in.bits.WRITE_BACK := Mux(
-    in.isAlu ,
+    in.isAlu,
     alu.io.out.bits.result,
-    Mux(jal || jalr, pc + 4.U, Mux(in.isAuipc, pc_with_offset, 0.U))
+    Mux(
+      have_mdu,
+      mdu.io.out.bits,
+      Mux(jal || jalr, pc + 4.U, Mux(in.isAuipc, pc_with_offset, 0.U))
+    )
   )
-  mem_in.valid := io.in.valid
+  mem_in.valid := Mux(have_mdu || mdu.io.in.fire, mdu.io.out.valid, io.in.valid)
 
+  mdu.io.out.ready := mem_in.ready
   alu.io.out.ready := mem_in.ready
   // ready transmit to frontedn
   io.in.ready := mem_in.ready
@@ -79,13 +101,17 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   mem_out <> lsu.io.out
 
   PipelineConnect(mem_out, wb_in, wb_in.fire, false.B)
-  //trap
+  // trap
   val trap_cond = "h5006b".U === wb_in.bits.cf.cf.instr
 
   io.wb.valid := wb_in.valid
-  io.wb.bits.rd := Mux(trap_cond, 10.U,wb_in.bits.rd)
+  io.wb.bits.rd := Mux(trap_cond, 10.U, wb_in.bits.rd)
   io.wb.bits.data := Mux(trap_cond, 0.U, wb_in.bits.WRITE_BACK)
-  io.wb.bits.wen := Mux(trap_cond, true.B,wb_in.valid && wb_in.bits.cf.ctrl.rfWen)
+  io.wb.bits.wen := Mux(
+    trap_cond,
+    true.B,
+    wb_in.valid && wb_in.bits.cf.ctrl.rfWen
+  )
   wb_in.ready := io.wb.ready
 
   alu.io.out.ready := true.B
@@ -99,7 +125,6 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   val dt_iw = Module(new DifftestIntWriteback)
   val dt_irs = Module(new DifftestArchIntRegState)
   val dt_cs = Module(new DifftestCSRState)
-
 
   dt_ic.io.clock := clock
   dt_ic.io.coreid := 0.U
@@ -161,6 +186,4 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   dt_te.io.instrCnt := instr_cnt
   dt_te.io.valid := RegNext(trap_cond)
 
-  dontTouch(io.in)
-  dontTouch(mem_in)
 }

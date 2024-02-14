@@ -157,22 +157,14 @@ class Divider(len: Int = 64) extends Module with Setting{
   io.in.ready := (state === s_idle) || io.out.valid
 }
 
-class MDUIO(implicit p: Parameters) extends FunctionUnitIO(64) with Setting{
+class MDUIO extends FunctionUnitIO with Setting{
   val divflush = Input(Bool())
 }
 
 class SSDMDU(implicit p: Parameters) extends Module with Setting{
   val io = IO(new MDUIO)
 
-  val (valid, src1, src2, func) = (io.in.valid, io.in.bits.src1, io.in.bits.src2, io.in.bits.cf.ctrl.fuOpType)
-  def access(valid: Bool, src1: UInt, src2: UInt, func: UInt): UInt = {
-    this.valid := valid
-    this.src1 := src1
-    this.src2 := src2
-    this.func := Mux(valid,func,RegEnable(func,valid))
-    io.out.bits.data
-  }
-
+  val (valid, src1, src2, func) = (io.in.valid, io.in.bits.src1, io.in.bits.src2, io.in.bits.func)
   val isDiv = MDUOpType.isDiv(func)
   val isDivSign = MDUOpType.isDivSign(func)
   val isW = MDUOpType.isW(func)
@@ -210,7 +202,7 @@ class SSDMDU(implicit p: Parameters) extends Module with Setting{
   div.io.in.valid := io.in.valid && isDiv
 
   val mulRes = mul.io.out.bits
-  val divResTmp = Mux(func(1) /* rem */, div.io.out.bits(2*XLEN-1,XLEN), div.io.out.bits(XLEN-1,0))
+  val divResTmp = Mux(MDUOpType.isR(func) /* rem */, div.io.out.bits(2*XLEN-1,XLEN), div.io.out.bits(XLEN-1,0))
   val divRes = Mux(isW, SignExt(divResTmp(31,0),XLEN), divResTmp)
 
   io.out.bits := Mux(mul.io.out.valid, mulRes.asUInt, divRes)

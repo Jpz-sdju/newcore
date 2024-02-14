@@ -84,7 +84,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
     done
   ) || (state === s_refilling)
   val miss_and_occupied = miss && meta_hit.asUInt.orR
-  when(miss_and_occupied) {
+  when(miss_and_occupied && tag(OHToUInt(meta_hit)) === "h8000a".U) {
     printf("tag is %x,meta is 11\n", tag(OHToUInt(meta_hit)) << 12)
   }
   dontTouch(miss)
@@ -219,7 +219,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
 
   array_write.valid := write_valid
 
-  when(write_valid){
+  when(write_valid && req_reg.addr === "h8000af60".U){
     printf("is write req,addr is %x, data is %x\n", req_reg.addr, req_reg.wdata)
   }
   dontTouch(array_write)

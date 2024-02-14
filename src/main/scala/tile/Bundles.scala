@@ -70,6 +70,7 @@ class CfCtrl(implicit p: Parameters) extends Bundle {
 class PipelineBundle(implicit p: Parameters) extends Bundle with Setting{
   val cf = new CfCtrl
   val isAlu = Bool()
+  val isMdu = Bool()
   val isBranch = Bool()
   val isJmp = Bool()
   val isAuipc = Bool()

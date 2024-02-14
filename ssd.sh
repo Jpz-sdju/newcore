@@ -46,6 +46,7 @@ if [[ -n $TEST_CASES ]]; then
   mkdir log 1>/dev/null 2>&1
   PASS_NUM=0
   FAIL_NUM=0
+  FAILL_NUM=0
   TESTCASES_NUM=
 for FOLDER in ${TEST_CASES[@]}
     do

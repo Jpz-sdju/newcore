@@ -205,7 +205,7 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
       )
     )
   )
-  val write_data = Mux(write_miss, Mux(this_is_first_grant,write_miss_data, oridata), Mux(write_hit, write_hit_data, oridata))
+  val write_data = Mux(write_miss, Mux(this_is_first_grant && first || !this_is_first_grant && done,write_miss_data, oridata), Mux(write_hit, write_hit_data, oridata))
 
   val refill_bank_mask = Mux(first, "b00001111".U, "b11110000".U)
   val write_hit_bank_mask = UIntToOH(req_reg.addr(5, 3))
@@ -218,6 +218,10 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   array_write.bits.addr := Cat(req_reg.addr(31, 6), 0.U(6.W)) // temporary
 
   array_write.valid := write_valid
+
+  when(write_valid){
+    printf("is write req,addr is %x, data is %x\n", req_reg.addr, req_reg.wdata)
+  }
   dontTouch(array_write)
 
   // need to reg first grant data

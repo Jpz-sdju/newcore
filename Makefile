@@ -55,3 +55,12 @@ dv:
 
 test:
 	mill -j 9 chiselModule.test.runMain Sim $(FIR_OPTS) 
+
+alredy = $(shell head havepassed)
+listnt:
+#	find ./ready2run/ -name *.bin | grep -v -e add
+	sed -i 's/^/-e /g' havepassed 
+	cat havepassed | tr '\n' ' '
+
+ss:
+	echo $(alredy)

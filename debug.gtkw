@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Feb 14 04:58:10 2024
+[*] Thu Feb 15 06:01:03 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Wed Feb 14 04:56:52 2024"
-[dumpfile_size] 4988347
+[dumpfile_mtime] "Thu Feb 15 05:44:17 2024"
+[dumpfile_size] 10306381
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 174
-[size] 1659 881
-[pos] -1 -1
-*-7.319658 707 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 287
+[size] 1973 966
+[pos] -15 133
+*-4.319658 328 328 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.SimTop.
 [treeopen] TOP.SimTop.core.
@@ -23,15 +23,69 @@
 [treeopen] TOP.SimTop.core.l_core.icache.fsm.array.
 [treeopen] TOP.SimTop.core.memory.
 [treeopen] TOP.SimTop.core.memory.ram.
-[sst_width] 392
+[sst_width] 438
 [signals_width] 511
 [sst_expanded] 1
-[sst_vpaned_height] 512
+[sst_vpaned_height] 572
 @22
 TOP.SimTop.core.l_core.frontend.ifu.pc[31:0]
 @28
 TOP.SimTop.core.l_core.frontend.ifu.io_next
 @200
 -
+@28
+TOP.SimTop.core.l_core.dcache.fsm.miss
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.s2_req_valid
+@c00023
+TOP.SimTop.core.l_core.dcache.fsm.array.set_idx[5:0]
+@28
+(0)TOP.SimTop.core.l_core.dcache.fsm.array.set_idx[5:0]
+(1)TOP.SimTop.core.l_core.dcache.fsm.array.set_idx[5:0]
+(2)TOP.SimTop.core.l_core.dcache.fsm.array.set_idx[5:0]
+(3)TOP.SimTop.core.l_core.dcache.fsm.array.set_idx[5:0]
+(4)TOP.SimTop.core.l_core.dcache.fsm.array.set_idx[5:0]
+(5)TOP.SimTop.core.l_core.dcache.fsm.array.set_idx[5:0]
+@1401201
+-group_end
+@22
+TOP.SimTop.core.l_core.dcache.fsm.s2_req_addr[31:0]
+@200
+-
+@22
+TOP.SimTop.core.l_core.dcache.fsm.array.w_set_idx[5:0]
+@28
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_valid
+@22
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_data[255:0]
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_0
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_1
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_2
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_3
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_4
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_5
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_6
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_bank_mask_7
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_way_mask_0
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_way_mask_1
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_way_mask_2
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_way_mask_3
+@200
+-
+@28
+TOP.SimTop.core.l_core.dcache.fsm.write_hit_bank_mask[7:0]
 [pattern_trace] 1
 [pattern_trace] 0
+!100000@@
+?"1E0
+@23
+TOP.SimTop.core.l_core.dcache.fsm.array.io_array_write_req_bits_data[255:0]
+!!

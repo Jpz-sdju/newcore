@@ -67,6 +67,7 @@ class DcacheArray() extends Module with Setting {
   val bank_idx = data_read_bus.req.bits.setIdx(2, 0)
   val set_idx = data_read_bus.req.bits.setIdx(8, 3)
   val w_set_idx = io.array_write_req.bits.addr(11,6)
+  dontTouch(w_set_idx)
 
   // read addr assign
   for (i <- 0 until 8) {

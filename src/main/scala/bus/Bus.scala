@@ -6,12 +6,21 @@ import chisel3.util._
 import freechips.rocketchip.config._
 import top.Setting
 
+class AddrBundle extends Bundle with Setting{
+  val tag = UInt(20.W)
+  val set_idx = UInt(6.W)
+  val bank_idx = UInt(3.W)
+  val dword_offset = UInt(3.W)
+}
 class CacheReq extends Bundle with Setting {
   val cmd = Bool() //0 is read, 1 is wirte
   val addr = UInt(PAddrBits.W)
   val wdata = UInt(XLEN.W)
   val wsize = UInt(4.W)
   val wmask = UInt(8.W)
+  def getTagMetaIdx(addr :UInt) = addr.asTypeOf(new AddrBundle).set_idx
+  def getDataIdx(addr :UInt) = Cat(addr.asTypeOf(new AddrBundle).set_idx, addr.asTypeOf(new AddrBundle).bank_idx)
+  
 }
 class ReadReq extends Bundle with Setting {
   val addr = UInt(PAddrBits.W)

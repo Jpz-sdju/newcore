@@ -13,7 +13,7 @@ import top.Setting
 import dataclass.data
 import freechips.rocketchip.diplomaticobjectmodel.model.U
 
-class DadeChannel(edge: TLEdgeOut,id: Int) extends Module with Setting {
+class AcquireTransfer(edge: TLEdgeOut,id: Int) extends Module with Setting {
   val io = IO(new Bundle {
     val req_from_fsm = Flipped(Decoupled(new CacheReq))
 

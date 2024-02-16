@@ -4,7 +4,7 @@ MAKEFILE_DIR := $(dir $(MAKEFILE_PATH))
 
 BUILD_DIR = build
 
-FIR_OPTS = -td $(BUILD_DIR) --output-file SimTop.v --full-stacktrace
+FIR_OPTS = -td $(BUILD_DIR) --output-file SimTop.v --full-stacktrace 
 SCALA_FILE = $(shell find ./src/main/scala -name '*.scala')
 V = verilator
 CPP = $(abspath ./csrc/main.cpp)

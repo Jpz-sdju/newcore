@@ -41,8 +41,8 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   })
 
   val (bus, edge) = outer.node.out.head
-  val ade = Module(new DadeChannel(edge,0))
-  val fsm = Module(new DCacheFSM)
+  val acquire_ops = Module(new AcquireTransfer(edge,0))
+  val fsm = Module(new CacheFSM)
   fsm.io.req_from_lsu.bits.addr := io.read_req.bits.addr
   fsm.io.req_from_lsu.bits.cmd := 0.U
   fsm.io.req_from_lsu.bits.wdata := 0.U
@@ -51,9 +51,9 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   fsm.io.req_from_lsu.valid := io.read_req.valid
   io.read_req.ready := fsm.io.req_from_lsu.ready
 
-  fsm.io.req_to_Achannel <> ade.io.req_from_fsm
-  fsm.io.resp_from_Achannel <> ade.io.resp_to_fsm
-  ade.io.array_write_way := fsm.io.array_write_way
+  fsm.io.req_to_Achannel <> acquire_ops.io.req_from_fsm
+  fsm.io.resp_from_Achannel <> acquire_ops.io.resp_to_fsm
+  acquire_ops.io.array_write_way := fsm.io.array_write_way
 
   /*
     DataArray read region
@@ -74,18 +74,12 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   io.read_resp.valid := fsm.io.resp_to_lsu.valid
   fsm.io.resp_to_lsu.ready := io.read_resp.ready
 
-  // ade connect
-  ade.io.sourceA <> bus.a
-  ade.io.sinkD <> bus.d
-  ade.io.sourceE <> bus.e
+  // acquire_ops connect
+  acquire_ops.io.sourceA <> bus.a
+  acquire_ops.io.sinkD <> bus.d
+  acquire_ops.io.sourceE <> bus.e
 
   // icache data refill
 
-  ade.io.array_write_req <> array.io.array_write_req
-  // xbar(
-  //   VecInit(fsm.io.array_write_req, ade.io.array_write_req),
-  //   array.io.array_write_req,
-  //   array.io.array_write_req.fire,
-  //   false.B
-  // )
+  acquire_ops.io.array_write_req <> array.io.array_write_req
 }

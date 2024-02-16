@@ -14,7 +14,7 @@ import dataclass.data
 import freechips.rocketchip.diplomaticobjectmodel.model.U
 import os.stat
 
-class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
+class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
     val req_from_lsu = Flipped(Decoupled(new CacheReq))
     // if miss
@@ -59,8 +59,10 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   val state = RegInit(s_idle)
 
   // assign array to first read,from LSU
-  io.data_read_bus.req.bits.setIdx := s1_req.bits.getDataIdx(s1_req.bits.addr)
-  io.data_read_bus.req.valid := s1_req.valid
+  // for(i <- 0 until 8 ){
+    io.data_read_bus.req.bits.setIdx := s1_req.bits.getDataIdx(s1_req.bits.addr)
+    io.data_read_bus.req.valid := s1_req.valid 
+  // }
   
   io.tag_read_bus.req.valid := s1_req.valid
   io.tag_read_bus.req.bits.setIdx := s1_req.bits.getTagMetaIdx(s1_req.bits.addr)

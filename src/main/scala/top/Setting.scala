@@ -18,4 +18,7 @@ trait Setting {
   val banks = 8
 
 
+  val LineSize = 64
+
+
 }

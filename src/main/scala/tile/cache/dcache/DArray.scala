@@ -15,12 +15,14 @@ import freechips.rocketchip.diplomaticobjectmodel.model.U
 
 class DcacheArray() extends Module with Setting {
   val io = IO(new Bundle {
-    // set 16kb,4ways,not banked,linesize = 64B
-    //                                                              * 8 is for 8 banks
-    val data_read_bus = Flipped(new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways))
-    val tag_read_bus = Flipped(new SRAMReadBus(gen = UInt((32 - 6 - 6).W), set = 64, way = ways))
-    val meta_read_bus = Flipped(new SRAMReadBus(gen = UInt(2.W), set = 64, way = ways))
-
+    // val data_read_bus = Flipped(new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways))
+    val data_read_bus = Flipped(
+      new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways)
+    )
+    val tag_read_bus =
+      Flipped(new SRAMReadBus(gen = UInt((32 - 6 - 6).W), set = 64, way = ways))
+    val meta_read_bus =
+      Flipped(new SRAMReadBus(gen = UInt(2.W), set = 64, way = ways))
 
     val array_write_req = Flipped(Decoupled(new ArrayWriteBundle))
   })
@@ -72,7 +74,7 @@ class DcacheArray() extends Module with Setting {
   // read addr assign
   for (i <- 0 until 8) {
     val read = Wire(new SRAMReadBus(gen = UInt(64.W), set = 64, way = ways))
-    read.apply(bank_idx === i.U && data_read_bus.req.valid, set_idx)
+    read.apply(i.U === bank_idx && data_read_bus.req.valid, set_idx)
     dataArray(i).io.r <> read
   }
 
@@ -81,7 +83,6 @@ class DcacheArray() extends Module with Setting {
 
   val seqq = VecInit(Seq.tabulate(8)(i => dataArray(i).io.r.resp.data))
 
-  dontTouch(bank_idx)
   dontTouch(set_idx)
   // assign 4 ways RESULT to outer, bank_idx MUST BE REG!!!!!!
   data_read_bus.resp.data := seqq(RegNext(bank_idx))
@@ -129,14 +130,24 @@ class DcacheArray() extends Module with Setting {
   val meta_write_bus = Wire(
     new SRAMWriteBus(gen = UInt(2.W), set = 64, way = ways)
   )
-  
+
   val write_4ways_tag = WireInit(VecInit(Seq.fill(ways)(0.U(20.W))))
   write_4ways_tag(waymask_uint) := write_req.bits.tag
   val write_4ways_meta = WireInit(VecInit(Seq.fill(ways)(0.U(20.W))))
   write_4ways_meta(waymask_uint) := write_req.bits.meta
-  
-  tag_write_bus.apply(valid = write_req.valid, data = write_4ways_tag, setIdx = w_set_idx, waymask = waymask_onehot.asUInt)
-  meta_write_bus.apply(valid = write_req.valid, data = write_4ways_meta, setIdx = w_set_idx, waymask = waymask_onehot.asUInt)
+
+  tag_write_bus.apply(
+    valid = write_req.valid,
+    data = write_4ways_tag,
+    setIdx = w_set_idx,
+    waymask = waymask_onehot.asUInt
+  )
+  meta_write_bus.apply(
+    valid = write_req.valid,
+    data = write_4ways_meta,
+    setIdx = w_set_idx,
+    waymask = waymask_onehot.asUInt
+  )
 
   tagArray.io.w <> tag_write_bus
   metaArray.io.w <> meta_write_bus

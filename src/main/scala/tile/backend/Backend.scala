@@ -134,7 +134,7 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   dt_ic.io.instr := RegNext(wb_in.bits.cf.cf.instr)
   dt_ic.io.special := 0.U
   dt_ic.io.isRVC := 0.U
-  dt_ic.io.skip := 0.U
+  dt_ic.io.skip := RegNext(wb_in.bits.lsAddr < "h80000000".U || wb_in.bits.lsAddr > "h90000000".U)&& RegNext(wb_in.bits.isLoad) && RegNext(io.wb.valid && io.wb.bits.wen)
   dt_ic.io.scFailed := false.B
   dt_ic.io.wen := RegNext(io.wb.bits.wen)
   dt_ic.io.wpdest := RegNext(io.wb.bits.rd)

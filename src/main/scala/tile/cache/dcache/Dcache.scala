@@ -33,7 +33,7 @@ class Dcache()(implicit p: Parameters) extends LazyModule {
   lazy val module = new DcacheImpl(this)
 }
 class DcacheImpl(outer: Dcache)(implicit p: Parameters)
-    extends LazyModuleImp(outer) {
+    extends LazyModuleImp(outer) with Setting{
   val io = IO(new Bundle {
     val req_from_lsu = Flipped(DecoupledIO(new CacheReq))
     val read_resp = DecoupledIO((new ReadResp))
@@ -72,12 +72,23 @@ class DcacheImpl(outer: Dcache)(implicit p: Parameters)
   /* 
   RELEASE REGION
   */
-  
-  
+  val release = Module(new ReleaseTransfer(edge))
 
-  //   val isGrant = io.mem_grantReleaseAck.bits.opcode === TLMessages.Grant || io.mem_grantReleaseAck.bits.opcode === TLMessages.GrantData
-  // val isRelAck = io.mem_grantReleaseAck.bits.opcode === TLMessages.ReleaseAck
-  // io.mem_grantReleaseAck.ready := Mux(isGrant, acquireAccess.io.mem_grantAck.ready, Mux(isRelAck, release.io.mem_releaseAck.ready, false.B))
+  release.io.req_from_fsm <> fsm.io.req_to_Cchannel
+  
+  release.io.sourceC <> bus.c
+  release.io.sinkD <> bus.d
+  fsm.io.release_done := release.io.releace_done
+  val isGrant = bus.d.bits.opcode === TLMessages.Grant || bus.d.bits.opcode === TLMessages.GrantData
+  val isRelAck = bus.d.bits.opcode === TLMessages.ReleaseAck
+  bus.d.ready := Mux(isGrant, acquire_ops.io.sinkD.ready, Mux(isRelAck, release.io.sinkD.ready, false.B))
+
+
+
+  // Dcache data read
+  CacheXbar(fsm.io.data_read_bus, release.io.data_read_bus, array.io.data_read_bus)
+  CacheXbar(fsm.io.tag_read_bus, release.io.tag_read_bus, array.io.tag_read_bus)
+  CacheXbar(fsm.io.meta_read_bus, release.io.meta_read_bus, array.io.meta_read_bus)
 
 
 

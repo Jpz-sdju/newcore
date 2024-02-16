@@ -61,6 +61,7 @@ class AcquireTransfer(edge: TLEdgeOut,id: Int) extends Module with Setting {
 
 
   val (grant_first, _, grant_done, grant_count) = edge.count(io.sinkD)
+  val isRelAck = io.sinkD.bits.opcode === TLMessages.Grant || io.sinkD.bits.opcode === TLMessages.GrantData
 
   //Grant Ack must to free cacheCork IDPool!!
   val sinkD = RegEnable(io.sinkD.bits.sink, io.sinkD.fire)
@@ -68,7 +69,7 @@ class AcquireTransfer(edge: TLEdgeOut,id: Int) extends Module with Setting {
     toSink = sinkD
   )
   io.sourceE.bits := grantAck
-  io.sourceE.valid := io.array_write_req.fire && grant_done
+  io.sourceE.valid := io.array_write_req.fire && grant_done && isRelAck
 
 
   // When resp is fire,could accept next req
@@ -119,7 +120,7 @@ class AcquireTransfer(edge: TLEdgeOut,id: Int) extends Module with Setting {
 
   val write_req = io.array_write_req 
   
-  write_req.valid := refill_time
+  write_req.valid := refill_time && isRelAck
   write_req.bits.addr := Cat(addr(31, 6), 0.U(6.W))
 
   write_req.bits.data := Mux(is_read, oridata, Mux(this_is_first_grant && grant_first || !this_is_first_grant && grant_done, write_miss_data, oridata))
@@ -138,7 +139,7 @@ class AcquireTransfer(edge: TLEdgeOut,id: Int) extends Module with Setting {
   val word = Mux(this_is_first_grant, first_word, sec_word)
 
   io.resp_to_fsm.bits := word
-  io.resp_to_fsm.valid := grant_done
+  io.resp_to_fsm.valid := grant_done && isRelAck
 
   // icache out to frontend
   io.sinkD.ready := true.B

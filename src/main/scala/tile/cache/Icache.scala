@@ -51,10 +51,13 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   fsm.io.req_from_lsu.valid := io.read_req.valid
   io.read_req.ready := fsm.io.req_from_lsu.ready
 
+
   fsm.io.req_to_Achannel <> acquire_ops.io.req_from_fsm
   fsm.io.resp_from_Achannel <> acquire_ops.io.resp_to_fsm
   acquire_ops.io.array_write_way := fsm.io.array_write_way
 
+  fsm.io.req_to_Cchannel <> DontCare
+  fsm.io.release_done <> DontCare
   /*
     DataArray read region
   */

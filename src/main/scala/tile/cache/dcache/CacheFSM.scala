@@ -21,7 +21,8 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
     val req_to_Achannel = Decoupled(new CacheReq)
     val resp_from_Achannel = Flipped(Valid(UInt(64.W)))
     // if replace
-    // val req_to_Cchannel = Decoupled()
+    val req_to_Cchannel = Decoupled(new CacheReq)
+    val release_done = Input(Bool())
     
     // read bus * 8 is for 8 banks
     val data_read_bus = Vec(banks, new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways))
@@ -54,8 +55,8 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   val done = io.resp_from_Achannel.valid
 
   val (s_idle :: s_release
-    :: s_acquire :: s_wating :: s_refilling :: Nil) =
-    Enum(5)
+    :: s_acquire :: s_refilling :: Nil) =
+    Enum(4)
   val state = RegInit(s_idle)
 
   // assign array to first read,from LSU
@@ -72,13 +73,13 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
 
   // array read result
   // val bank_idx = UIntToOH(s2_req.addr(5,3))
-  val bank_idx = WireInit(s2_req.addr(5,3))
+  val bank_idx = s2_req.addr(5,3)
   
   // val data = Mux1H(bank_idx, io.data_read_bus).resp.data
   val data =  io.data_read_bus(bank_idx).resp.data
   val tag = io.tag_read_bus.resp.data
   val meta = io.meta_read_bus.resp.data
-  dontTouch(data)
+  // dontTouch(data)
   dontTouch(tag)
   dontTouch(meta)
 
@@ -96,6 +97,7 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   })
   val ava_mask = PriorityMux(ava, Seq(1.U,2.U,4.U,8.U))
   val has_ava = ava.asUInt.orR
+  val all_clean = VecInit(meta.map(_ === "b10".U)).asUInt.andR
   io.array_write_way := Mux(miss && has_ava, ava_mask, "b0001".U).asBools
 
   //2.if not,choose victim way,default way 0001!
@@ -104,11 +106,6 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   // val victim_data_read_req = 
 
   val miss_and_occupied = miss && meta_hit.asUInt.orR
-  when(miss && !has_ava) {
-    printf("need replavce, addr :%x\n",s2_req.addr)
-    printf("default replace 0001 ways, meta is %x, tag is %x\n", meta(0), tag(0))
-    println("=====================================")
-  }
   dontTouch(miss)
 
   // when suocun de valid
@@ -117,16 +114,21 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
     when(miss) {
       when(state === s_idle) {
         //not avaliable way,need to release
-        when(!has_ava){
+        when(!has_ava && !all_clean){
           state := s_release
         }.otherwise{
           state := s_acquire
         }
       }
-      when(state === s_acquire && io.req_to_Achannel.fire) {
-        state := s_wating
+      when(state === s_release){
+        when(io.release_done){
+          state := s_acquire
+        }
       }
-      when(state === s_wating && done) {
+      when(state === s_acquire && io.req_to_Achannel.fire) {
+        state := s_refilling
+      }
+      when(state === s_refilling && done) {
         state := s_idle
       }
 
@@ -147,6 +149,12 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   io.req_to_Achannel.bits.wsize := s2_req.wsize
   io.req_to_Achannel.bits.wmask := s2_req.wmask
   io.req_to_Achannel.valid := s2_req_valid && state === s_acquire
+
+  /* 
+    REQ to C chaneel
+   */
+  io.req_to_Cchannel.bits := s2_req
+  io.req_to_Cchannel.valid := s2_req_valid && state === s_release
 
   /*
     ARRAY WRITE REGION
@@ -196,14 +204,15 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   )
   val write_data =  write_hit_data
 
-
+  val tar_meta = meta(OHToUInt(res_hit)).asTypeOf(new ClientMetadata)
   val write_hit_bank_mask = UIntToOH(s2_req.addr(5, 3))
 
   array_write.bits.bank_mask :=  write_hit_bank_mask.asBools
   array_write.bits.way_mask :=  res_hit
   array_write.bits.data := write_data
   array_write.bits.tag := s2_req.addr(31, 12)
-  array_write.bits.meta := Mux(s2_is_write, "b11".U,"b10".U)
+  // array_write.bits.meta := Mux(s2_is_write, "b11".U,"b10".U)
+  array_write.bits.meta := (tar_meta.onAccess(Mux(s2_is_write,"b11".U, "b00".U))._3).state
   array_write.bits.addr := Cat(s2_req.addr(31, 6), 0.U(6.W)) // temporary
   array_write.valid := write_hit
 

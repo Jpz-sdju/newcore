@@ -41,18 +41,26 @@ class DcacheImpl(outer: Dcache)(implicit p: Parameters)
   })
 
   val (bus, edge) = outer.node.out.head
-  val ade = Module(new DadeChannel(edge))
+  val ade = Module(new DadeChannel(edge,1))
   val fsm = Module(new DCacheFSM)
   fsm.io.req_from_lsu <> io.req_from_lsu
-  fsm.io.req_to_Achannel <> ade.io.acquire_req
-  fsm.io.resp_from_Achannel <> ade.io.acquire_resp
-  //Essential INFO
-  fsm.io.resp_grant_first := ade.io.acquire_grant_first
-  fsm.io.resp_grant_done := ade.io.acquire_grant_done
-  //data to lsu
+  fsm.io.req_to_Achannel <> ade.io.req_from_fsm
+  fsm.io.resp_from_Achannel <> ade.io.resp_to_fsm
+  ade.io.array_write_way := fsm.io.array_write_way
+
+  /*
+    DataArray read region
+   */
+
+  // assign array to first read,from LSU
+  val array = Module(new DcacheArray)
+  array.io.data_read_bus <> fsm.io.data_read_bus
+  array.io.meta_read_bus <> fsm.io.meta_read_bus
+  array.io.tag_read_bus <> fsm.io.tag_read_bus
+
+  // data to lsu
   fsm.io.resp_to_lsu <> io.read_resp
 
-  
   // ade connect
   ade.io.sourceA <> bus.a
   ade.io.sinkD <> bus.d
@@ -60,6 +68,9 @@ class DcacheImpl(outer: Dcache)(implicit p: Parameters)
 
   // Dcache data refill
 
+
+  val arb = Module(new Arbiter(new ArrayWriteBundle, 2))
+  arb.io.in(0) <> fsm.io.array_write_req
+  arb.io.in(1) <> ade.io.array_write_req
+  arb.io.out <> array.io.array_write_req
 }
-
-

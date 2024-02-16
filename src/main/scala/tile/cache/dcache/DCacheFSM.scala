@@ -18,13 +18,20 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
     val req_from_lsu = Flipped(Decoupled(new CacheReq))
     // if miss
-    val req_to_Achannel = Decoupled(new ReadReq)
-
-    // data from downward refill
-    val resp_from_Achannel = Flipped(DecoupledIO(new ReadRespFromDown))
-    // Essential Info
-    val resp_grant_first = Input(Bool())
-    val resp_grant_done = Input(Bool())
+    val req_to_Achannel = Decoupled(new CacheReq)
+    val resp_from_Achannel = Flipped(Valid(UInt(64.W)))
+    // if replace
+    // val req_to_Cchannel = Decoupled()
+    
+    // read bus * 8 is for 8 banks
+    val data_read_bus = new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways)
+    val tag_read_bus = new SRAMReadBus(gen = UInt((32 - 6 - 6).W), set = 64, way = ways)
+    val meta_read_bus = new SRAMReadBus(gen = UInt(2.W), set = 64, way = ways)
+    
+    // hit write bus
+    val array_write_req = Decoupled(new ArrayWriteBundle)
+    //to ade,indicate way to refill
+    val array_write_way = Output(Vec(4,Bool()))
 
     // data to lsu
     val resp_to_lsu = (DecoupledIO(new ReadResp))
@@ -44,30 +51,27 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   val s2_write_size = s2_req.wsize
 
   // A channel Resp Info
-  val resp = io.resp_from_Achannel
-  val first = io.resp_grant_first
-  val done = io.resp_grant_done
+  val done = io.resp_from_Achannel.valid
 
-  val (s_idle :: s_checking
-    :: s_send_down :: s_wating :: s_refilling :: Nil) =
+  val (s_idle :: s_release
+    :: s_acquire :: s_wating :: s_refilling :: Nil) =
     Enum(5)
   val state = RegInit(s_idle)
 
   // assign array to first read,from LSU
-  val array = Module(new DcacheArray)
-  array.io.data_read_bus.req.bits.setIdx := s1_req.bits.getDataIdx(s1_req.bits.addr)
-  array.io.data_read_bus.req.valid := s1_req.valid
+  io.data_read_bus.req.bits.setIdx := s1_req.bits.getDataIdx(s1_req.bits.addr)
+  io.data_read_bus.req.valid := s1_req.valid
   
-  array.io.tag_read_bus.req.valid := s1_req.valid
-  array.io.tag_read_bus.req.bits.setIdx := s1_req.bits.getTagMetaIdx(s1_req.bits.addr)
+  io.tag_read_bus.req.valid := s1_req.valid
+  io.tag_read_bus.req.bits.setIdx := s1_req.bits.getTagMetaIdx(s1_req.bits.addr)
 
-  array.io.meta_read_bus.req.bits.setIdx := s1_req.bits.getTagMetaIdx(s1_req.bits.addr)
-  array.io.meta_read_bus.req.valid := s1_req.valid
+  io.meta_read_bus.req.bits.setIdx := s1_req.bits.getTagMetaIdx(s1_req.bits.addr)
+  io.meta_read_bus.req.valid := s1_req.valid
 
   // array read result
-  val data = array.io.data_read_bus.resp.data
-  val tag = array.io.tag_read_bus.resp.data
-  val meta = array.io.meta_read_bus.resp.data
+  val data = io.data_read_bus.resp.data
+  val tag = io.tag_read_bus.resp.data
+  val meta = io.meta_read_bus.resp.data
   dontTouch(data)
   dontTouch(tag)
   dontTouch(meta)
@@ -86,12 +90,18 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
   })
   val ava_mask = PriorityMux(ava, Seq(1.U,2.U,4.U,8.U))
   val has_ava = ava.asUInt.orR
+  io.array_write_way := Mux(miss && has_ava, ava_mask, "b0001".U).asBools
 
-  //2.if not,
+  //2.if not,choose victim way,default way 0001!
+  val victim_way = "b0001".U
+  //need to read 8 banks data twice,
+  // val victim_data_read_req = 
 
   val miss_and_occupied = miss && meta_hit.asUInt.orR
-  when(miss_and_occupied && tag(OHToUInt(meta_hit)) === "h8000a".U) {
-    printf("tag is %x,meta is 11\n", tag(OHToUInt(meta_hit)) << 12)
+  when(miss && !has_ava) {
+    printf("need replavce, addr :%x\n",s2_req.addr)
+    printf("default replace 0001 ways, meta is %x, tag is %x\n", meta(0), tag(0))
+    println("=====================================")
   }
   dontTouch(miss)
 
@@ -100,77 +110,44 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
     // when reg_valid,if miss
     when(miss) {
       when(state === s_idle) {
-        state := s_send_down
+        //not avaliable way,need to release
+        when(!has_ava){
+          state := s_release
+        }.otherwise{
+          state := s_acquire
+        }
       }
-      when(state === s_send_down && io.req_to_Achannel.fire) {
+      when(state === s_acquire && io.req_to_Achannel.fire) {
         state := s_wating
       }
-      when(state === s_wating && resp.fire && first) {
-        state := s_refilling
-      }
-      when(state === s_refilling && resp.fire && done) {
+      when(state === s_wating && done) {
         state := s_idle
       }
+
+
     }
 
   }
 
   // only when state is idle,could let more req in!
-  s1_req.ready := (state === s_idle) && !miss && array.io.data_read_bus.req.ready
+  s1_req.ready := (state === s_idle) && !miss && io.data_read_bus.req.ready
 
-  // NOTE!:must clean low 6bits,clear in DadeChannel.scala
-  val this_is_first_grant = !s2_req.addr(5)
-  val this_word = s2_req.addr(4, 3)
   /*
     REQ to A channel
    */
+  io.req_to_Achannel.bits.cmd := s2_req.cmd
   io.req_to_Achannel.bits.addr := s2_req.addr
-  io.req_to_Achannel.bits.size := DontCare
-  io.req_to_Achannel.valid := state === s_send_down
+  io.req_to_Achannel.bits.wdata := s2_req.wdata
+  io.req_to_Achannel.bits.wsize := s2_req.wsize
+  io.req_to_Achannel.bits.wmask := s2_req.wmask
+  io.req_to_Achannel.valid := s2_req_valid && state === s_acquire
 
   /*
     ARRAY WRITE REGION
    */
-  val array_write = array.io.array_write_req
-  // write is at:
-  // 1. req is read, miss, refill
-  // 2, req is write, miss, merge refill.
-  // 3, req is write, hit, merge refill
-  val read_miss = s2_is_read && miss
-  val write_miss = s2_is_write && miss
+  val array_write = io.array_write_req
+  // write is at: ONLY HIT!!
   val write_hit = s2_is_write && !miss
-
-  val refill_time = (first || done) && resp.valid
-  val write_valid =
-    (read_miss && refill_time) || (write_miss && refill_time) || write_hit
-
-  val need_big_refill =
-    (read_miss || write_miss) 
-
-  val oridata = resp.bits.data
-  val write_miss_data = LookupTree(
-    s2_req.addr(4, 3),
-    List(
-      "b00".U -> Cat(
-        oridata(255, 64),
-        MaskData(oridata(63, 0), s2_req.wdata, MaskExpand(s2_req.wmask))
-      ),
-      "b01".U -> Cat(
-        oridata(255, 128),
-        MaskData(oridata(127, 64), s2_req.wdata, MaskExpand(s2_req.wmask)),
-        oridata(63, 0)
-      ),
-      "b10".U -> Cat(
-        oridata(255, 192),
-        MaskData(oridata(191, 128), s2_req.wdata, MaskExpand(s2_req.wmask)),
-        oridata(127, 0)
-      ),
-      "b11".U -> Cat(
-        MaskData(oridata(255, 192), s2_req.wdata, MaskExpand(s2_req.wmask)),
-        oridata(191, 0)
-      )
-    )
-  )
 
   val write_hit_data = LookupTree(
     s2_req.addr(4, 3),
@@ -211,35 +188,25 @@ class DCacheFSM()(implicit p: Parameters) extends Module with Setting {
       )
     )
   )
-  val write_data = Mux(write_miss, Mux(this_is_first_grant && first || !this_is_first_grant && done,write_miss_data, oridata), Mux(write_hit, write_hit_data, oridata))
+  val write_data =  write_hit_data
 
-  val refill_bank_mask = Mux(first, "b00001111".U, "b11110000".U)
+
   val write_hit_bank_mask = UIntToOH(s2_req.addr(5, 3))
 
-  array_write.bits.bank_mask := Mux( need_big_refill , refill_bank_mask, write_hit_bank_mask ).asBools
-  // array_write.bits.way_mask := ("b0001".U(4.W)).asBools
-  array_write.bits.way_mask := Mux(miss,Mux(has_ava, ava_mask, "b0001".U(4.W)), res_hit.asUInt).asBools
+  array_write.bits.bank_mask :=  write_hit_bank_mask.asBools
+  array_write.bits.way_mask :=  res_hit
   array_write.bits.data := write_data
   array_write.bits.tag := s2_req.addr(31, 12)
-  array_write.bits.meta := "b11".U
+  array_write.bits.meta := Mux(s2_is_write, "b11".U,"b10".U)
   array_write.bits.addr := Cat(s2_req.addr(31, 6), 0.U(6.W)) // temporary
+  array_write.valid := write_hit
 
-  array_write.valid := write_valid
+  // when(write_valid && s2_req.addr === "h8000af60".U){
+  //   printf("is write req,addr is %x, data is %x\n", s2_req.addr, s2_req.wdata)
+  // }
 
-  when(write_valid && s2_req.addr === "h8000af60".U){
-    printf("is write req,addr is %x, data is %x\n", s2_req.addr, s2_req.wdata)
-  }
 
-  // need to reg first grant data
-  // mux grant data
-  val first_grant_data = RegEnable(resp.bits.data, resp.valid && first)
-  val first_word = first_grant_data >> (this_word << log2Up(XLEN))
-  val sec_word =
-    (resp.bits.data & Fill(256, done)) >> (this_word << log2Up(XLEN))
-  val word = Mux(this_is_first_grant, first_word, sec_word)
+  io.resp_to_lsu.bits.data := Mux(miss, io.resp_from_Achannel.bits, data(OHToUInt(res_hit)))
+  io.resp_to_lsu.valid := Mux(miss, io.resp_from_Achannel.valid, s2_req_valid)
 
-  // temp use data to lsu.valid as store instr compelete sig
-  io.resp_to_lsu.bits.data := Mux(miss, word, data(OHToUInt(res_hit)))
-  io.resp_to_lsu.valid := Mux(miss, resp.valid && done, s2_req_valid)
-  io.resp_from_Achannel.ready := io.resp_to_lsu.ready
 }

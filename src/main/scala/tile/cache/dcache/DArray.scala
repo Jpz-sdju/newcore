@@ -17,7 +17,7 @@ class DcacheArray() extends Module with Setting {
   val io = IO(new Bundle {
     // val data_read_bus = Flipped(new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways))
     val data_read_bus = Flipped(
-      new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways)
+      Vec(8, new SRAMReadBus(gen = UInt(64.W), set = 64 , way = ways))
     )
     val tag_read_bus =
       Flipped(new SRAMReadBus(gen = UInt((32 - 6 - 6).W), set = 64, way = ways))
@@ -66,15 +66,15 @@ class DcacheArray() extends Module with Setting {
     )
   )
   // 0-6 offset,6 idx,20tag
-  val bank_idx = data_read_bus.req.bits.setIdx(2, 0)
-  val set_idx = data_read_bus.req.bits.setIdx(8, 3)
+  val bank_idx = data_read_bus(0).req.bits.setIdx(5, 0)
+  val set_idx = data_read_bus(0).req.bits.setIdx(5, 0)
   val w_set_idx = io.array_write_req.bits.addr(11,6)
   dontTouch(w_set_idx)
 
   // read addr assign
   for (i <- 0 until 8) {
     val read = Wire(new SRAMReadBus(gen = UInt(64.W), set = 64, way = ways))
-    read.apply(i.U === bank_idx && data_read_bus.req.valid, set_idx)
+    read.apply( data_read_bus(i).req.valid, set_idx)
     dataArray(i).io.r <> read
   }
 
@@ -85,8 +85,11 @@ class DcacheArray() extends Module with Setting {
 
   dontTouch(set_idx)
   // assign 4 ways RESULT to outer, bank_idx MUST BE REG!!!!!!
-  data_read_bus.resp.data := seqq(RegNext(bank_idx))
-  data_read_bus.req.ready := dataArray(0).io.r.req.ready
+
+  for (i <- 0 until 8) {
+    data_read_bus(i).resp.data := seqq(i)
+    data_read_bus(i).req.ready := dataArray(i).io.r.req.ready
+  }
   /*
     WRITE REGION
    */

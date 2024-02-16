@@ -24,7 +24,7 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
     // val req_to_Cchannel = Decoupled()
     
     // read bus * 8 is for 8 banks
-    val data_read_bus = new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways)
+    val data_read_bus = Vec(banks, new SRAMReadBus(gen = UInt(64.W), set = 64 * 8, way = ways))
     val tag_read_bus = new SRAMReadBus(gen = UInt((32 - 6 - 6).W), set = 64, way = ways)
     val meta_read_bus = new SRAMReadBus(gen = UInt(2.W), set = 64, way = ways)
     
@@ -59,10 +59,10 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   val state = RegInit(s_idle)
 
   // assign array to first read,from LSU
-  // for(i <- 0 until 8 ){
-    io.data_read_bus.req.bits.setIdx := s1_req.bits.getDataIdx(s1_req.bits.addr)
-    io.data_read_bus.req.valid := s1_req.valid 
-  // }
+  for(i <- 0 until 8 ){
+    io.data_read_bus(i).req.bits.setIdx := s1_req.bits.getTagMetaIdx(s1_req.bits.addr)
+    io.data_read_bus(i).req.valid := s1_req.valid 
+  }
   
   io.tag_read_bus.req.valid := s1_req.valid
   io.tag_read_bus.req.bits.setIdx := s1_req.bits.getTagMetaIdx(s1_req.bits.addr)
@@ -71,7 +71,11 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   io.meta_read_bus.req.valid := s1_req.valid
 
   // array read result
-  val data = io.data_read_bus.resp.data
+  // val bank_idx = UIntToOH(s2_req.addr(5,3))
+  val bank_idx = WireInit(s2_req.addr(5,3))
+  
+  // val data = Mux1H(bank_idx, io.data_read_bus).resp.data
+  val data =  io.data_read_bus(bank_idx).resp.data
   val tag = io.tag_read_bus.resp.data
   val meta = io.meta_read_bus.resp.data
   dontTouch(data)
@@ -132,7 +136,7 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   }
 
   // only when state is idle,could let more req in!
-  s1_req.ready := (state === s_idle) && !miss && io.data_read_bus.req.ready
+  s1_req.ready := (state === s_idle) && !miss && io.data_read_bus(0).req.ready
 
   /*
     REQ to A channel

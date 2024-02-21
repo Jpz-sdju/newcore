@@ -24,4 +24,6 @@ trait Setting {
   val MMIOSize = 0x40000000L
   val UnCacheBase = 0x10000000L
   val UnCacheSize = 0x50000000L
+  val CLINTBase = 0x38000000L          // for bin compiled by AM
+  val CLINTSize = 0x00010000L
 }

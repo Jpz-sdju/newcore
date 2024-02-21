@@ -29,6 +29,7 @@ simple:
 
 
 emu: sim-verilog
+	rm -r build/2*
 	$(MAKE) -C ./difftest emu EMU_CXX_EXTRA_FLAGS="-DFIRST_INST_ADDRESS=0x80000000" EMU_TRACE=1 -j8
 	./build/emu --diff ready2run/riscv64-nemu-interpreter-so -i $(I) --dump-wave -b 0 --wave-path=vcd.vcd
 

@@ -30,6 +30,7 @@ class UncacheImp(outer: UnCache) extends LazyModuleImp(outer) with Setting {
 
   val io = IO(new Bundle {
     val req_from_lsu = Flipped(new LsuBus)
+    val uncache_stall = Output(Bool())
   })
 
   val (bus, edge) = outer.clientNode.out.head
@@ -86,10 +87,13 @@ class UncacheImp(outer: UnCache) extends LazyModuleImp(outer) with Setting {
 
   val (_, _, refill_done, _) = edge.addr_inc(mem_grant)
 
+  // only when state is idle,could let more req in!
+  s1_req.ready := (state === s_invalid)
+  io.uncache_stall := !(state === s_invalid)
 
-   // only when state is idle,could let more req in!
-  s1_req.ready := (state === s_invalid) 
 
+  //FUCKING BUGS!!!!!
+  io.req_from_lsu.resp.valid := mem_grant.valid
   switch(state) {
     is(s_invalid) {
       when(s1_req.fire) {

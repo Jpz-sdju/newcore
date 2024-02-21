@@ -58,7 +58,7 @@ object ColorPrint extends App {
   val backgroundRed = "\u001B[41mRed Background\u001B[0m"
   println(backgroundRed)
 }
-class CoreWithL1()(implicit p: Parameters) extends LazyModule {
+class CoreWithL1()(implicit p: Parameters) extends LazyModule with Setting{
 
   val icache = LazyModule(new Icache())
   val dcache = LazyModule(new Dcache())
@@ -93,13 +93,21 @@ class CoreWithL1()(implicit p: Parameters) extends LazyModule {
   val xbar = TLXbar()
   xbar := TLCacheCork() := icache.node
   xbar := TLCacheCork() := dcache.node
-
-  val uncache_node = uncache.clientNode
-
   // memAXI4SlaveNode := TLToAXI4() := TLBuffer() := TLCacheCork(TLCacheCorkParams(true)) :=* xbar
   memAXI4SlaveNode := AXI4UserYanker() := AXI4Buffer() := TLToAXI4() := TLWidthWidget(
     32
   ) := TLBuffer() := TLBuffer() := xbar
+
+
+
+  val clintSpace = Seq(AddressSet(CLINTBase, CLINTSize - 0x1L)) // CLINT
+  val timer = LazyModule(new TLTimer(clintSpace, sim = true))
+  val mmioxbar = TLXbar()
+  mmioxbar := TLBuffer.chainNode(2) := TLTempNode() := uncache.clientNode
+  // mmioxbar := TLBuffer.chainNode(2) := TLTempNode() := iUncache.clientNode
+  timer.node := mmioxbar
+
+
 
   val onChipPeripheralRange = AddressSet(0x38000000L, 0x07ffffffL)
   val uartRange = AddressSet(0x40600000L, 0xf)
@@ -130,7 +138,7 @@ class CoreWithL1()(implicit p: Parameters) extends LazyModule {
     AXI4UserYanker() :=
     AXI4Deinterleaver(8) :=
     TLToAXI4() :=
-    TLBuffer() := uncache.clientNode
+    TLBuffer() := mmioxbar
 
   lazy val module = new CoreWithL1Imp(this)
 

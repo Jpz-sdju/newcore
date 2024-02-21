@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Feb 21 12:35:47 2024
+[*] Wed Feb 21 13:10:47 2024
 [*]
 [dumpfile] "/home/oslab/work/chisel/xs-env/newcore/vcd.vcd"
-[dumpfile_mtime] "Wed Feb 21 12:34:06 2024"
-[dumpfile_size] 3833728
+[dumpfile_mtime] "Wed Feb 21 13:09:14 2024"
+[dumpfile_size] 13725458
 [savefile] "/home/oslab/work/chisel/xs-env/newcore/debug.gtkw"
-[timestart] 66
-[size] 1643 1007
+[timestart] 2928
+[size] 1665 1031
 [pos] -1 -1
-*-5.319658 140 7662 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-3.319658 2958 7662 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.SimTop.
 [treeopen] TOP.SimTop.soc.
@@ -22,7 +22,11 @@
 [sst_width] 438
 [signals_width] 378
 [sst_expanded] 1
-[sst_vpaned_height] 541
+[sst_vpaned_height] 621
+@22
+TOP.SimTop.soc.l_core.frontend.ifu.pc[31:0]
+@200
+-
 @28
 TOP.SimTop.soc.l_core.backend.lsu.io_d_req_req_valid
 @22
@@ -41,11 +45,25 @@ TOP.SimTop.soc.l_core.to1Nxbar.io_in_req_bits_addr[31:0]
 TOP.SimTop.soc.l_core.to1Nxbar.io_out_0_req_valid
 @22
 TOP.SimTop.soc.l_core.to1Nxbar.io_out_0_req_bits_addr[31:0]
-@201
+@200
 -
 @28
 TOP.SimTop.soc.l_core.to1Nxbar.io_out_1_req_valid
 @22
 TOP.SimTop.soc.l_core.to1Nxbar.io_out_1_req_bits_addr[31:0]
+@200
+-
+@28
+TOP.SimTop.soc.l_core.backend.mdu.div_io_in_valid
+@22
+TOP.SimTop.soc.l_core.backend.mdu.io_in_bits_src1[63:0]
+@23
+TOP.SimTop.soc.l_core.backend.mdu.io_in_bits_src2[63:0]
+@28
+TOP.SimTop.soc.l_core.backend.mdu.io_out_valid
+@22
+TOP.SimTop.soc.l_core.backend.mdu.io_out_bits[63:0]
+@200
+-
 [pattern_trace] 1
 [pattern_trace] 0

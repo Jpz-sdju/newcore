@@ -202,7 +202,7 @@ class SSDMDU(implicit p: Parameters) extends Module with Setting{
   div.io.in.valid := io.in.valid && isDiv
 
   val mulRes = mul.io.out.bits
-  val divResTmp = Mux(MDUOpType.isR(func) /* rem */, div.io.out.bits(2*XLEN-1,XLEN), div.io.out.bits(XLEN-1,0))
+  val divResTmp = Mux(MDUOpType.isR(RegEnable(func, io.in.valid)) /* rem */, div.io.out.bits(2*XLEN-1,XLEN), div.io.out.bits(XLEN-1,0))
   val divRes = Mux(isW, SignExt(divResTmp(31,0),XLEN), divResTmp)
 
   io.out.bits := Mux(mul.io.out.valid, mulRes.asUInt, divRes)

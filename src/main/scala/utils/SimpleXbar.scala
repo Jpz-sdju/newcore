@@ -120,8 +120,8 @@ class SimpleBusCrossbar1toN(addressSpace: List[(Long, Long)]) extends Module{
   val outSelVecResp = RegEnable(outSelVec, outSel.req.fire && (state === s_idle))
   val outSelResp = io.out(outSelIdxResp)
   //进入的req addr是无效地址（不在范围内）
-  // val reqInvalidAddr = io.in.req.valid && !outSelVec.asUInt.orR
-  val reqInvalidAddr =  !outSelVec.asUInt.orR
+  val reqInvalidAddr = !outSelVec.asUInt.orR
+  // val reqInvalidAddr =  !outSelVec.asUInt.orR
 
 
 
@@ -136,7 +136,7 @@ class SimpleBusCrossbar1toN(addressSpace: List[(Long, Long)]) extends Module{
   switch (state) {
     is (s_idle) {
       when (outSel.req.fire) { state := s_resp }
-      when (reqInvalidAddr) { state := s_error }
+      when (reqInvalidAddr && io.in.req.valid) { state := s_error }
     }
     //is (s_resp) { when (outSelResp.resp.fire) { state := s_idle } }
     is (s_resp) {

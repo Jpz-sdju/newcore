@@ -43,13 +43,13 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
   val (bus, edge) = outer.node.out.head
   val acquire_ops = Module(new AcquireTransfer(edge,0))
   val fsm = Module(new CacheFSM)
-  fsm.io.req_from_lsu.bits.addr := io.read_req.bits.addr
-  fsm.io.req_from_lsu.bits.cmd := 0.U
-  fsm.io.req_from_lsu.bits.wdata := 0.U
-  fsm.io.req_from_lsu.bits.wsize := 0.U
-  fsm.io.req_from_lsu.bits.wmask := 0.U
-  fsm.io.req_from_lsu.valid := io.read_req.valid
-  io.read_req.ready := fsm.io.req_from_lsu.ready
+  fsm.io.req_from_lsu.req.bits.addr := io.read_req.bits.addr
+  fsm.io.req_from_lsu.req.bits.cmd := 0.U
+  fsm.io.req_from_lsu.req.bits.wdata := 0.U
+  fsm.io.req_from_lsu.req.bits.wsize := 0.U
+  fsm.io.req_from_lsu.req.bits.wmask := 0.U
+  fsm.io.req_from_lsu.req.valid := io.read_req.valid
+  io.read_req.ready := fsm.io.req_from_lsu.req.ready
 
 
   fsm.io.req_to_Achannel <> acquire_ops.io.req_from_fsm
@@ -73,9 +73,9 @@ class IcacheImpl(outer: Icache)(implicit p: Parameters)
 
   // data to frontend
   io.read_resp.bits.req := io.read_req.bits
-  io.read_resp.bits.resp.data := fsm.io.resp_to_lsu.bits.data
-  io.read_resp.valid := fsm.io.resp_to_lsu.valid
-  fsm.io.resp_to_lsu.ready := io.read_resp.ready
+  io.read_resp.bits.resp.data := fsm.io.req_from_lsu.resp.bits
+  io.read_resp.valid := fsm.io.req_from_lsu.resp.valid
+  fsm.io.req_from_lsu.resp.ready := io.read_resp.ready
 
   // acquire_ops connect
   acquire_ops.io.sourceA <> bus.a

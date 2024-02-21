@@ -19,6 +19,9 @@ trait Setting {
 
 
   val LineSize = 64
-
-
+  val ResetVector = 0x80000000L
+  val MMIOBase = 0x40000000L
+  val MMIOSize = 0x40000000L
+  val UnCacheBase = 0x10000000L
+  val UnCacheSize = 0x50000000L
 }

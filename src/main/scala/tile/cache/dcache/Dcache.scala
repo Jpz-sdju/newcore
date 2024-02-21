@@ -35,8 +35,7 @@ class Dcache()(implicit p: Parameters) extends LazyModule {
 class DcacheImpl(outer: Dcache)(implicit p: Parameters)
     extends LazyModuleImp(outer) with Setting{
   val io = IO(new Bundle {
-    val req_from_lsu = Flipped(DecoupledIO(new CacheReq))
-    val read_resp = DecoupledIO((new ReadResp))
+    val req_from_lsu = Flipped(new LsuBus)
   })
 
   val (bus, edge) = outer.node.out.head
@@ -48,8 +47,6 @@ class DcacheImpl(outer: Dcache)(implicit p: Parameters)
   fsm.io.resp_from_Achannel <> acquire_ops.io.resp_to_fsm
   acquire_ops.io.array_write_way := fsm.io.array_write_way
   
-  
-  
   /*
   DataArray read region
   */
@@ -60,9 +57,6 @@ class DcacheImpl(outer: Dcache)(implicit p: Parameters)
   array.io.meta_read_bus <> fsm.io.meta_read_bus
   array.io.tag_read_bus <> fsm.io.tag_read_bus
   
-  // data to lsu
-  fsm.io.resp_to_lsu <> io.read_resp
-
   // acquire_ops connect
   acquire_ops.io.sourceA <> bus.a
   acquire_ops.io.sinkD <> bus.d

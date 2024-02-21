@@ -15,6 +15,7 @@ import frontend._
 import backend._
 import cache._
 import cache.dcache._
+import top.Setting
 object ColorPrint extends App {
   // ANSI 转义码定义颜色和样式
   val RESET = "\u001B[0m"
@@ -61,6 +62,7 @@ class CoreWithL1()(implicit p: Parameters) extends LazyModule {
 
   val icache = LazyModule(new Icache())
   val dcache = LazyModule(new Dcache())
+  val uncache = LazyModule(new UnCache())
   // axi4ram slave node
   val device = new MemoryDevice
   val memRange =
@@ -89,16 +91,53 @@ class CoreWithL1()(implicit p: Parameters) extends LazyModule {
     )
   )
   val xbar = TLXbar()
-  xbar := TLCacheCork() :=icache.node
-  xbar := TLCacheCork() :=dcache.node
+  xbar := TLCacheCork() := icache.node
+  xbar := TLCacheCork() := dcache.node
+
+  val uncache_node = uncache.clientNode
 
   // memAXI4SlaveNode := TLToAXI4() := TLBuffer() := TLCacheCork(TLCacheCorkParams(true)) :=* xbar
-  memAXI4SlaveNode := AXI4UserYanker() := AXI4Buffer() :=TLToAXI4() := TLWidthWidget(32) := TLBuffer():= TLBuffer():= xbar
+  memAXI4SlaveNode := AXI4UserYanker() := AXI4Buffer() := TLToAXI4() := TLWidthWidget(
+    32
+  ) := TLBuffer() := TLBuffer() := xbar
+
+  val onChipPeripheralRange = AddressSet(0x38000000L, 0x07ffffffL)
+  val uartRange = AddressSet(0x40600000L, 0xf)
+  val uartDevice = new SimpleDevice("serial", Seq("xilinx,uartlite"))
+  val uartParams = AXI4SlaveParameters(
+    address = Seq(uartRange),
+    regionType = RegionType.UNCACHED,
+    supportsRead = TransferSizes(1, 8),
+    supportsWrite = TransferSizes(1, 8),
+    resources = uartDevice.reg
+  )
+  val peripheralRange = AddressSet(
+    0x0,
+    0x7fffffff
+  ).subtract(onChipPeripheralRange).flatMap(x => x.subtract(uartRange))
+  val peripheralNode = AXI4SlaveNode(
+    Seq(
+      AXI4SlavePortParameters(
+        Seq(uartParams),
+        beatBytes = 8
+      )
+    )
+  )
+
+  peripheralNode :=
+    AXI4IdIndexer(idBits = 4) :=
+    AXI4Buffer() :=
+    AXI4UserYanker() :=
+    AXI4Deinterleaver(8) :=
+    TLToAXI4() :=
+    TLBuffer() := uncache.clientNode
 
   lazy val module = new CoreWithL1Imp(this)
 
 }
-class CoreWithL1Imp(outer: CoreWithL1) extends LazyModuleImp(outer) {
+class CoreWithL1Imp(outer: CoreWithL1)
+    extends LazyModuleImp(outer)
+    with Setting {
   val io = IO(new Bundle {
     val iread_req = Decoupled(new ReadReq)
     val iread_resp = Flipped(Decoupled(new ReadResp))
@@ -111,21 +150,34 @@ class CoreWithL1Imp(outer: CoreWithL1) extends LazyModuleImp(outer) {
   val iread_resp = io.iread_resp
   val icache = outer.icache.module
   val dcache = outer.dcache.module
+  val uncache = outer.uncache.module
 
-  //icache reslut must connect to frontend
+  // icache reslut must connect to frontend
   icache.io.read_req <> frontend.io.iread_req
   icache.io.read_resp <> frontend.io.iread_resp
 
-  dcache.io.req_from_lsu <> backend.io.d_req
-  dcache.io.read_resp <> backend.io.read_resp
-
+  // dcache.io.req_from_lsu <> backend.io.d_req
 
   frontend.io.out <> backend.io.in
   frontend.io.redirect <> backend.io.redirect
 
   frontend.io.wb <> backend.io.wb
 
-  //debug
+  // debug
   frontend.io.gpr <> backend.io.gpr
   val memory = outer.memAXI4SlaveNode.makeIOs()
+  val peripheral = outer.peripheralNode.makeIOs()
+
+  val addrSpace = List(
+    (ResetVector, 0x80000000L), // cache
+    (
+      UnCacheBase,
+      UnCacheSize.toLong
+    ) // uncache
+  )
+  val to1Nxbar = Module(new SimpleBusCrossbar1toN(addrSpace))
+
+  to1Nxbar.io.in <>  backend.io.d_req
+  to1Nxbar.io.out(0) <> dcache.io.req_from_lsu
+  to1Nxbar.io.out(1) <> uncache.io.req_from_lsu
 }

@@ -18,8 +18,8 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
 
     val redirect = (DecoupledIO(UInt(XLEN.W)))
 
-    val d_req = Decoupled(new CacheReq)
-    val read_resp = Flipped(Decoupled(new ReadResp))
+    val d_req = new LsuBus
+    // val resp_to_lsu = Flipped(Decoupled(new ReadResp))
 
     val wb = Decoupled(new WBundle)
 
@@ -93,7 +93,6 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   val lsu = Module(new LSU)
   lsu.io.in <> mem_in
   lsu.io.d_req <> io.d_req
-  lsu.io.read_resp <> io.read_resp
 
   /*
     Dcache to write back
@@ -134,7 +133,7 @@ class Backend()(implicit p: Parameters) extends Module with Setting {
   dt_ic.io.instr := RegNext(wb_in.bits.cf.cf.instr)
   dt_ic.io.special := 0.U
   dt_ic.io.isRVC := 0.U
-  dt_ic.io.skip := RegNext(wb_in.bits.lsAddr < "h80000000".U || wb_in.bits.lsAddr > "h90000000".U)&& RegNext(wb_in.bits.isLoad) && RegNext(io.wb.valid && io.wb.bits.wen)
+  dt_ic.io.skip := RegNext(wb_in.bits.lsAddr < "h80000000".U || wb_in.bits.lsAddr > "h90000000".U)&& RegNext(wb_in.bits.isLoad && io.wb.valid && io.wb.bits.wen || wb_in.bits.isStore) 
   dt_ic.io.scFailed := false.B
   dt_ic.io.wen := RegNext(io.wb.bits.wen)
   dt_ic.io.wpdest := RegNext(io.wb.bits.rd)

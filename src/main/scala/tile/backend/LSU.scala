@@ -15,8 +15,8 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new PipelineBundle))
 
-    val d_req = Decoupled(new CacheReq)
-    val read_resp = Flipped(Decoupled(new ReadResp))
+    val d_req = new LsuBus
+    // val resp_from_dc = Flipped(Decoupled(new ReadResp))
 
     val out = Decoupled(new PipelineBundle)
   })
@@ -42,8 +42,8 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
       )
     )
   }
-
-  io.read_resp.ready := true.B
+  val resp = io.d_req.resp
+  resp.ready := true.B
 
   val in = io.in.bits
   val load = in.isLoad
@@ -51,12 +51,12 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
   val need_op = (load || store) && io.in.valid
 
 
-  io.d_req.valid := need_op
-  io.d_req.bits.cmd := store // 1 is write,0 is read
-  io.d_req.bits.addr := in.lsAddr
-  io.d_req.bits.wdata := genWdata(in.storeData, in.lsSize)
-  io.d_req.bits.wsize := in.lsSize
-  io.d_req.bits.wmask := genWmask(in.lsAddr, in.lsSize)
+  io.d_req.req.valid := need_op
+  io.d_req.req.bits.cmd := store // 1 is write,0 is read
+  io.d_req.req.bits.addr := in.lsAddr
+  io.d_req.req.bits.wdata := genWdata(in.storeData, in.lsSize)
+  io.d_req.req.bits.wsize := in.lsSize
+  io.d_req.req.bits.wmask := genWmask(in.lsAddr, in.lsSize)
 
   /*
   WB REGION
@@ -66,26 +66,26 @@ class LSU()(implicit p: Parameters) extends Module with Setting {
   val req_valid = RegEnable(io.in.valid, need_op)
   when(need_op){
     had_inflight := true.B
-  }.elsewhen(io.read_resp.valid){
+  }.elsewhen(resp.valid){
     had_inflight := false.B
   }
   // when is l/s instr and resp valid OR alu/other in.valid is true!!
-  io.out.valid := io.read_resp.valid && had_inflight || (io.in.valid && !need_op)
+  io.out.valid := resp.valid && had_inflight || (io.in.valid && !need_op)
   io.out.bits := Mux(had_inflight, req_reg, io.in.bits)
   // only when lsu out to wb,could let more in
-  io.in.ready := io.d_req.ready
+  io.in.ready := io.d_req.req.ready
 
 
 
   val read_data_sel = LookupTree(req_reg.lsAddr(2, 0), List(
-    "b000".U -> io.read_resp.bits.data(63, 0),
-    "b001".U -> io.read_resp.bits.data(63, 8),
-    "b010".U -> io.read_resp.bits.data(63, 16),
-    "b011".U -> io.read_resp.bits.data(63, 24),
-    "b100".U -> io.read_resp.bits.data(63, 32),
-    "b101".U -> io.read_resp.bits.data(63, 40),
-    "b110".U -> io.read_resp.bits.data(63, 48),
-    "b111".U -> io.read_resp.bits.data(63, 56)
+    "b000".U -> resp.bits(63, 0),
+    "b001".U -> resp.bits(63, 8),
+    "b010".U -> resp.bits(63, 16),
+    "b011".U -> resp.bits(63, 24),
+    "b100".U -> resp.bits(63, 32),
+    "b101".U -> resp.bits(63, 40),
+    "b110".U -> resp.bits(63, 48),
+    "b111".U -> resp.bits(63, 56)
   ))
   val read_data_ext = LookupTree(req_reg.cf.ctrl.fuOpType, List(
     LSUOpType.lb   -> SignExt(read_data_sel(7, 0) , XLEN),

@@ -16,7 +16,7 @@ import os.stat
 
 class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   val io = IO(new Bundle {
-    val req_from_lsu = Flipped(Decoupled(new CacheReq))
+    val req_from_lsu = Flipped(new LsuBus)
     // if miss
     val req_to_Achannel = Decoupled(new CacheReq)
     val resp_from_Achannel = Flipped(Valid(UInt(64.W)))
@@ -34,16 +34,14 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
     //to ade,indicate way to refill
     val array_write_way = Output(Vec(4,Bool()))
 
-    // data to lsu
-    val resp_to_lsu = (DecoupledIO(new ReadResp))
   })
 
   // LSU s1 req Info
-  val s1_req = io.req_from_lsu
+  val s1_req = io.req_from_lsu.req
   // reg  s1_req -> s2_req
   val s2_req = RegEnable(s1_req.bits, (0.U).asTypeOf(new CacheReq), s1_req.fire)
   val s2_req_valid = RegEnable(s1_req.valid, false.B, s1_req.fire)
-  when(io.resp_to_lsu.fire) {
+  when(io.req_from_lsu.resp.fire) {
     s2_req_valid := false.B
   }
   val s2_is_write = s2_req.cmd && s2_req_valid
@@ -221,7 +219,7 @@ class CacheFSM()(implicit p: Parameters) extends Module with Setting {
   // }
 
 
-  io.resp_to_lsu.bits.data := Mux(miss, io.resp_from_Achannel.bits, data(OHToUInt(res_hit)))
-  io.resp_to_lsu.valid := Mux(miss, io.resp_from_Achannel.valid, s2_req_valid)
+  io.req_from_lsu.resp.bits := Mux(miss, io.resp_from_Achannel.bits, data(OHToUInt(res_hit)))
+  io.req_from_lsu.resp.valid := Mux(miss, io.resp_from_Achannel.valid, s2_req_valid)
 
 }

@@ -22,6 +22,11 @@ class CacheReq extends Bundle with Setting {
   def getDataIdx(addr :UInt) = Cat(addr.asTypeOf(new AddrBundle).set_idx, addr.asTypeOf(new AddrBundle).bank_idx)
   
 }
+
+class LsuBus extends Bundle with Setting {
+  val req = DecoupledIO(new CacheReq)
+  val resp = Flipped(DecoupledIO(UInt(64.W)))
+}
 class ReadReq extends Bundle with Setting {
   val addr = UInt(PAddrBits.W)
   val size = UInt(4.W)

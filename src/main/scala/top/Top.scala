@@ -50,12 +50,9 @@ class SimTop()(implicit p: Parameters) extends Module {
     val uart = new UARTIO
   })
 
-  val core = Module(new Core())
+  val soc = Module(new Soc())
   io.ot := DontCare
 
-  io.uart.out.valid := false.B
-  io.uart.out.ch := 0.U
-
-  io.uart.in.valid := false.B
+  io.uart <> soc.io.uart
 
 }

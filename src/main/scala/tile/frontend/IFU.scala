@@ -19,8 +19,8 @@ class IFU()(implicit p: Parameters) extends Module with Setting {
     val next = Input(Bool())
   })
 
-  val pc = RegInit(("h8000_0000".U)(32.W))
-  val npc = RegInit(("h8000_0000".U)(32.W))
+  val pc = RegInit((ResetVector.U)(32.W))
+  val npc = RegInit((ResetVector.U)(32.W))
 
   val read = io.read_req
 
